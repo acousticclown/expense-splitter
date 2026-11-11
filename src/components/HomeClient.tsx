@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AccountMenu } from "@/components/AccountMenu";
+import { AppCredit } from "@/components/AppCredit";
 import { CreateGroupForm } from "@/components/CreateGroupForm";
 import { GroupsList } from "@/components/GroupsList";
 import {
@@ -114,6 +115,9 @@ export function HomeClient() {
           <Link href="/login" className="btn btn-primary mt-8 inline-flex anim-stamp">
             Sign in / Sign up
           </Link>
+          <div className="mt-10">
+            <AppCredit />
+          </div>
         </div>
       </main>
     );
@@ -138,14 +142,7 @@ export function HomeClient() {
           <GroupsList onCreate={() => setCreateOpen(true)} />
         </div>
 
-        <p className="text-sm text-ink-soft">
-          <Link
-            href="https://shivanshs-mini-apps.vercel.app"
-            className="font-semibold text-ink underline decoration-[var(--accent)] underline-offset-4"
-          >
-            ← Shivansh&apos;s Mini Apps
-          </Link>
-        </p>
+        <AppCredit />
       </main>
 
       <Sheet
