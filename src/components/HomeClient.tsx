@@ -91,33 +91,27 @@ export function HomeClient() {
 
   if (!user) {
     return (
-      <main className="shell relative flex min-h-[100dvh] flex-col justify-end overflow-hidden pb-12 pt-10 sm:justify-center sm:pb-16">
-        <div
-          className="pointer-events-none absolute -right-10 top-16 h-40 w-40 rotate-12 rounded-[1.25rem] bg-[var(--accent)]/25 blur-[1px]"
-          aria-hidden
-        />
-        <div className="anim-rise relative max-w-xl">
-          <p className="text-[0.72rem] font-800 uppercase tracking-[0.18em] text-ink-soft">
+      <main className="shell flex min-h-[100dvh] flex-col justify-center py-10 sm:py-16">
+        <div className="welcome-card anim-rise">
+          <p className="text-[0.72rem] font-800 uppercase tracking-[0.14em] text-ink-soft">
             Stub Ledger
           </p>
-          <p className="font-display mt-3 text-[clamp(3rem,14vw,5.2rem)] font-800 leading-[0.88] tracking-tight text-ink">
+          <p className="font-display mt-3 text-[clamp(2.6rem,11vw,4.2rem)] font-800 leading-[0.92] tracking-tight text-ink">
             Expense
             <br />
             Splitter
           </p>
-          <p className="mt-5 max-w-md text-base leading-relaxed text-ink-soft sm:text-lg">
-            Split spends. Settle the crew. Shared Mini Apps login.
+          <p className="mt-4 max-w-sm text-base leading-relaxed text-ink-soft">
+            Split spends. Settle the crew.
           </p>
           {bootError && (
             <p className="mt-4 text-sm font-semibold text-[var(--bad)]">{bootError}</p>
           )}
-          <Link href="/login" className="btn btn-primary mt-8 inline-flex anim-stamp">
+          <Link href="/login" className="btn btn-primary mt-7 inline-flex">
             Sign in / Sign up
           </Link>
-          <div className="mt-10">
-            <AppCredit />
-          </div>
         </div>
+        <AppCredit />
       </main>
     );
   }

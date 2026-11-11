@@ -249,18 +249,27 @@ export function GroupWorkspace({ slug }: { slug: string }) {
                 setSheetOpen(true);
               }}
             >
-              Stamp expense
+              Add spend
             </button>
           )}
         </div>
 
         {tab === "settle" && (
           <section aria-label="Settle" className="space-y-5">
-            <h2 className="font-display text-2xl font-800 tracking-tight">Settle</h2>
             {!members.length ? (
               <EmptyStage title="No crew yet" body="Add people on Crew." />
             ) : (
               <>
+                <div className="settle-hero">
+                  <p className="settle-hero-label">Open balance</p>
+                  <p className="settle-hero-value">
+                    {formatMoney(
+                      transfers.reduce((sum, t) => sum + t.amountCents, 0),
+                      currency,
+                    )}
+                  </p>
+                </div>
+
                 <div className="balance-board">
                   <div className="balance-head" aria-hidden>
                     <span>Name</span>
@@ -343,7 +352,7 @@ export function GroupWorkspace({ slug }: { slug: string }) {
                   setSheetOpen(true);
                 }}
               >
-                + Spend
+                Add spend
               </button>
             </div>
             {!expenses.length ? (
@@ -475,7 +484,7 @@ export function GroupWorkspace({ slug }: { slug: string }) {
 
       <Sheet
         open={sheetOpen}
-        title={editing ? "Edit stamp" : "Stamp expense"}
+        title={editing ? "Edit spend" : "Add spend"}
         onClose={() => {
           setSheetOpen(false);
           setEditing(null);

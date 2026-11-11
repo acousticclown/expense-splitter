@@ -78,7 +78,7 @@ export function AuthForm({ next = "/" }: { next?: string }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="surface space-y-4 p-5 sm:p-6">
+    <form onSubmit={onSubmit} className="surface space-y-4 p-5 sm:p-6 soft-card">
       <div>
         <p className="font-display text-2xl font-700 tracking-tight">
           {mode === "signup" ? "Create account" : "Sign in"}

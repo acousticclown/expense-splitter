@@ -47,29 +47,28 @@ export function GroupsList({ onCreate, refreshKey = 0 }: Props) {
   }
 
   return (
-    <section className="stub" aria-label="Your stubs">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-800 tracking-tight sm:text-3xl">
-            Your stubs
-          </h1>
-        </div>
+    <section aria-label="Your stubs">
+      <div className="mb-4 flex items-end justify-between gap-3">
+        <h1 className="font-display text-2xl font-800 tracking-tight sm:text-3xl">
+          Your stubs
+        </h1>
         <button type="button" className="btn btn-ghost text-sm" onClick={onCreate}>
           New stub
         </button>
       </div>
-      <div className="perforation" aria-hidden />
-      <ul>
+      <ul className="stub-cards">
         {groups.map((g) => (
           <li key={g.id}>
-            <Link href={`/g/${g.slug}`} className="stub-row">
+            <Link href={`/g/${g.slug}`} className="stub-card">
               <span className="min-w-0">
-                <span className="block truncate font-800 tracking-tight">{g.name}</span>
+                <span className="block truncate font-display text-lg font-800 tracking-tight">
+                  {g.name}
+                </span>
                 <span className="text-xs font-650 text-ink-soft">
                   {g.currency} · {new Date(g.created_at).toLocaleDateString()}
                 </span>
               </span>
-              <span className="shrink-0 text-sm font-800 text-ink-soft">Open →</span>
+              <span className="stub-card-open">Open</span>
             </Link>
           </li>
         ))}
