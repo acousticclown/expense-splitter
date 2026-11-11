@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 type Props = {
   name: string;
@@ -11,8 +12,13 @@ type Props = {
 export function GroupHeader({ name, currency }: Props) {
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const rootRef = useRef<HTMLElement>(null);
   const panelId = useId();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -39,105 +45,112 @@ export function GroupHeader({ name, currency }: Props) {
     }
   }
 
-  return (
-    <header
-      ref={rootRef}
-      className={`group-header${open ? " is-open" : ""}`}
-    >
-      {open && (
-        <button
-          type="button"
-          className="group-header-scrim"
-          aria-label="Close stub details"
-          onClick={() => setOpen(false)}
-        />
-      )}
-
-      <div className="group-header-sheet">
-        <div className="group-header-bar">
-          <Link
-            href="/"
-            className="group-header-side group-header-back"
-            aria-label="Back to stubs"
-          >
-            <span aria-hidden>←</span>
-          </Link>
-
-          <div className="group-header-center">
-            <button
-              type="button"
-              className="group-header-title-btn"
-              aria-expanded={open}
-              aria-controls={panelId}
-              onClick={() => setOpen((v) => !v)}
-            >
-              <h1 className="group-header-title" title={name}>
-                {name}
-              </h1>
-              <span
-                className={`group-header-chevron${open ? " is-open" : ""}`}
-                aria-hidden
-              >
-                <svg viewBox="0 0 20 20" width="16" height="16">
-                  <path
-                    d="M5 7.5 10 12.5 15 7.5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
-            </button>
-          </div>
-
+  const scrim =
+    open && mounted
+      ? createPortal(
           <button
             type="button"
-            className="group-header-side group-header-copy"
-            aria-label={copied ? "Link copied" : "Copy share link"}
-            title={copied ? "Copied" : "Copy share link"}
-            onClick={copyLink}
-          >
-            {copied ? (
-              <span className="group-header-copy-done" aria-hidden>
-                ✓
-              </span>
-            ) : (
-              <CopyIcon />
-            )}
-          </button>
-        </div>
+            className="group-header-scrim"
+            aria-label="Close stub details"
+            onClick={() => setOpen(false)}
+          />,
+          document.body,
+        )
+      : null;
 
-        {open && (
-          <div
-            id={panelId}
-            className="group-header-panel anim-stamp"
-            role="region"
-            aria-label="Stub details"
-          >
-            <div className="group-header-panel-body">
-              <p className="group-header-panel-name">{name}</p>
-              <p className="group-header-panel-meta">Currency · {currency}</p>
+  return (
+    <>
+      {scrim}
+      <header
+        ref={rootRef}
+        className={`group-header${open ? " is-open" : ""}`}
+      >
+        <div className="group-header-sheet">
+          <div className="group-header-bar">
+            <Link
+              href="/"
+              className="group-header-side group-header-back"
+              aria-label="Back to stubs"
+            >
+              <span aria-hidden>←</span>
+            </Link>
+
+            <div className="group-header-center">
               <button
                 type="button"
-                className="btn-boxy-split group-header-panel-cta"
-                onClick={async () => {
-                  await copyLink();
-                }}
+                className="group-header-title-btn"
+                aria-expanded={open}
+                aria-controls={panelId}
+                onClick={() => setOpen((v) => !v)}
               >
-                <span className="btn-boxy-split-label">
-                  {copied ? "Link copied" : "Copy share link"}
-                </span>
-                <span className="btn-boxy-split-arrow" aria-hidden>
-                  →
+                <h1 className="group-header-title" title={name}>
+                  {name}
+                </h1>
+                <span
+                  className={`group-header-chevron${open ? " is-open" : ""}`}
+                  aria-hidden
+                >
+                  <svg viewBox="0 0 20 20" width="16" height="16">
+                    <path
+                      d="M5 7.5 10 12.5 15 7.5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </span>
               </button>
             </div>
+
+            <button
+              type="button"
+              className="group-header-side group-header-copy"
+              aria-label={copied ? "Link copied" : "Copy share link"}
+              title={copied ? "Copied" : "Copy share link"}
+              onClick={copyLink}
+            >
+              {copied ? (
+                <span className="group-header-copy-done" aria-hidden>
+                  ✓
+                </span>
+              ) : (
+                <CopyIcon />
+              )}
+            </button>
           </div>
-        )}
-      </div>
-    </header>
+
+          {open && (
+            <div
+              id={panelId}
+              className="group-header-panel anim-stamp"
+              role="region"
+              aria-label="Stub details"
+            >
+              <div className="group-header-panel-body">
+                <p className="group-header-panel-name">{name}</p>
+                <p className="group-header-panel-meta">Currency · {currency}</p>
+                <button
+                  type="button"
+                  className="btn-boxy-split group-header-panel-cta"
+                  onClick={async () => {
+                    await copyLink();
+                  }}
+                >
+                  <span className="btn-boxy-split-label">
+                    {copied ? "Link copied" : "Copy share link"}
+                  </span>
+                  <span className="btn-boxy-split-arrow" aria-hidden>
+                    →
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </header>
+    </>
   );
 }
 

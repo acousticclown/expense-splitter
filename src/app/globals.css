@@ -348,29 +348,34 @@ body > * {
   z-index: 60;
 }
 
-/* Stub chrome: one-row bar; expand overlays with glass blur (no layout shift) */
+/* Stub chrome: solid overlay panel + frosted page scrim (no layout shift) */
 .group-header {
   position: relative;
   z-index: 55;
   min-height: 2.85rem;
 }
 
+.group-header.is-open {
+  z-index: 80;
+}
+
+/* Portaled to document.body — freezes/obscures the page behind the panel */
 .group-header-scrim {
   position: fixed;
   inset: 0;
-  z-index: 56;
+  z-index: 70;
   margin: 0;
   padding: 0;
   border: 0;
   cursor: pointer;
-  background: rgba(242, 243, 247, 0.42);
-  backdrop-filter: blur(18px) saturate(1.35);
-  -webkit-backdrop-filter: blur(18px) saturate(1.35);
+  background: rgba(243, 244, 247, 0.55);
+  backdrop-filter: blur(22px) saturate(1.2);
+  -webkit-backdrop-filter: blur(22px) saturate(1.2);
 }
 
 .group-header-sheet {
   position: relative;
-  z-index: 57;
+  z-index: 1;
   border-radius: var(--radius-card);
   background: transparent;
 }
@@ -380,15 +385,12 @@ body > * {
   left: 0;
   right: 0;
   top: 0;
-  z-index: 58;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.55);
+  z-index: 81;
+  background: #ffffff;
+  border: 1px solid rgba(17, 17, 17, 0.06);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.85) inset,
-    0 22px 48px rgba(17, 17, 17, 0.14),
-    0 8px 24px rgba(17, 17, 17, 0.08);
-  backdrop-filter: blur(22px) saturate(1.4);
-  -webkit-backdrop-filter: blur(22px) saturate(1.4);
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 18px 40px rgba(17, 17, 17, 0.16);
 }
 
 .group-header-bar {
@@ -426,9 +428,7 @@ body > * {
 
 .group-header.is-open .group-header-side {
   box-shadow: none;
-  background: rgba(232, 234, 239, 0.72);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: var(--mist);
 }
 
 .group-header-side:active {
@@ -466,9 +466,7 @@ body > * {
 }
 
 .group-header.is-open .group-header-title-btn {
-  background: rgba(232, 234, 239, 0.65);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: var(--mist);
 }
 
 .group-header-title {
