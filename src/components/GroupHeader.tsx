@@ -16,16 +16,15 @@ export function GroupHeader({ name, currency }: Props) {
 
   useEffect(() => {
     if (!open) return;
-    function onDoc(e: MouseEvent) {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
-    }
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setOpen(false);
     }
-    document.addEventListener("mousedown", onDoc);
     document.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener("mousedown", onDoc);
+      document.body.style.overflow = prev;
       document.removeEventListener("keydown", onKey);
     };
   }, [open]);
@@ -45,83 +44,99 @@ export function GroupHeader({ name, currency }: Props) {
       ref={rootRef}
       className={`group-header${open ? " is-open" : ""}`}
     >
-      <div className="group-header-bar">
-        <Link
-          href="/"
-          className="group-header-side group-header-back"
-          aria-label="Back to stubs"
-        >
-          <span aria-hidden>←</span>
-        </Link>
-
-        <div className="group-header-center">
-          <button
-            type="button"
-            className="group-header-title-btn"
-            aria-expanded={open}
-            aria-controls={panelId}
-            onClick={() => setOpen((v) => !v)}
-          >
-            <h1 className="group-header-title" title={name}>
-              {name}
-            </h1>
-            <span
-              className={`group-header-chevron${open ? " is-open" : ""}`}
-              aria-hidden
-            >
-              <svg viewBox="0 0 20 20" width="16" height="16">
-                <path
-                  d="M5 7.5 10 12.5 15 7.5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </span>
-          </button>
-        </div>
-
+      {open && (
         <button
           type="button"
-          className="group-header-side group-header-copy"
-          aria-label={copied ? "Link copied" : "Copy share link"}
-          title={copied ? "Copied" : "Copy share link"}
-          onClick={copyLink}
-        >
-          {copied ? (
-            <span className="group-header-copy-done" aria-hidden>
-              ✓
-            </span>
-          ) : (
-            <CopyIcon />
-          )}
-        </button>
-      </div>
+          className="group-header-scrim"
+          aria-label="Close stub details"
+          onClick={() => setOpen(false)}
+        />
+      )}
 
-      {open && (
-        <div id={panelId} className="group-header-panel anim-stamp" role="region" aria-label="Stub details">
-          <div className="group-header-panel-body">
-            <p className="group-header-panel-name">{name}</p>
-            <p className="group-header-panel-meta">Currency · {currency}</p>
+      <div className="group-header-sheet">
+        <div className="group-header-bar">
+          <Link
+            href="/"
+            className="group-header-side group-header-back"
+            aria-label="Back to stubs"
+          >
+            <span aria-hidden>←</span>
+          </Link>
+
+          <div className="group-header-center">
             <button
               type="button"
-              className="btn-boxy-split group-header-panel-cta"
-              onClick={async () => {
-                await copyLink();
-              }}
+              className="group-header-title-btn"
+              aria-expanded={open}
+              aria-controls={panelId}
+              onClick={() => setOpen((v) => !v)}
             >
-              <span className="btn-boxy-split-label">
-                {copied ? "Link copied" : "Copy share link"}
-              </span>
-              <span className="btn-boxy-split-arrow" aria-hidden>
-                →
+              <h1 className="group-header-title" title={name}>
+                {name}
+              </h1>
+              <span
+                className={`group-header-chevron${open ? " is-open" : ""}`}
+                aria-hidden
+              >
+                <svg viewBox="0 0 20 20" width="16" height="16">
+                  <path
+                    d="M5 7.5 10 12.5 15 7.5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </span>
             </button>
           </div>
+
+          <button
+            type="button"
+            className="group-header-side group-header-copy"
+            aria-label={copied ? "Link copied" : "Copy share link"}
+            title={copied ? "Copied" : "Copy share link"}
+            onClick={copyLink}
+          >
+            {copied ? (
+              <span className="group-header-copy-done" aria-hidden>
+                ✓
+              </span>
+            ) : (
+              <CopyIcon />
+            )}
+          </button>
         </div>
-      )}
+
+        {open && (
+          <div
+            id={panelId}
+            className="group-header-panel anim-stamp"
+            role="region"
+            aria-label="Stub details"
+          >
+            <div className="group-header-panel-body">
+              <p className="group-header-panel-name">{name}</p>
+              <p className="group-header-panel-meta">Currency · {currency}</p>
+              <button
+                type="button"
+                className="btn-boxy-split group-header-panel-cta"
+                onClick={async () => {
+                  await copyLink();
+                }}
+              >
+                <span className="btn-boxy-split-label">
+                  {copied ? "Link copied" : "Copy share link"}
+                </span>
+                <span className="btn-boxy-split-arrow" aria-hidden>
+                  →
+                </span>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </header>
   );
 }

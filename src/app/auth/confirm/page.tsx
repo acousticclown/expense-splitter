@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ensureProfile } from "@/lib/auth";
 import { Loader } from "@/components/ui/Loader";
 
-function CallbackInner() {
+function ConfirmInner() {
   const router = useRouter();
   const params = useSearchParams();
   const [message, setMessage] = useState("Completing sign-in…");
@@ -15,33 +15,22 @@ function CallbackInner() {
     let cancelled = false;
 
     async function finish() {
-      const sb = createClient();
       const nextRaw = params.get("next") || "/";
       const next = nextRaw.startsWith("/") ? nextRaw : "/";
-      const code = params.get("code");
-      const tokenHash = params.get("token_hash");
-      const type = params.get("type");
+      const sb = createClient();
 
       try {
+        // Prefer query `code` — should normally be handled by /auth/callback
+        // route, but keep a safe client fallback for same-tab recoveries.
+        const code = params.get("code");
         if (code) {
-          const { error } = await sb.auth.exchangeCodeForSession(code);
-          if (error) throw error;
-        } else if (tokenHash && type) {
-          const { error } = await sb.auth.verifyOtp({
-            type: type as
-              | "magiclink"
-              | "email"
-              | "signup"
-              | "invite"
-              | "recovery",
-            token_hash: tokenHash,
-          });
-          if (error) throw error;
-        } else if (
-          typeof window !== "undefined" &&
-          window.location.hash.includes("access_token")
-        ) {
-          // Implicit magic-link: tokens live in the hash (server never sees them).
+          window.location.replace(
+            `/auth/callback?code=${encodeURIComponent(code)}&next=${encodeURIComponent(next)}`,
+          );
+          return;
+        }
+
+        if (typeof window !== "undefined" && window.location.hash.includes("access_token")) {
           const hash = new URLSearchParams(window.location.hash.slice(1));
           const access_token = hash.get("access_token");
           const refresh_token = hash.get("refresh_token");
@@ -56,7 +45,9 @@ function CallbackInner() {
         } else {
           const { data } = await sb.auth.getSession();
           if (!data.session) {
-            throw new Error("Missing auth code — request a new magic link");
+            throw new Error(
+              "Open the magic link in the same browser where you requested it, or use password.",
+            );
           }
         }
 
@@ -77,7 +68,7 @@ function CallbackInner() {
         const msg = err instanceof Error ? err.message : "Sign-in failed";
         if (!cancelled) {
           setMessage(msg);
-          router.replace(`/login?error=${encodeURIComponent(msg)}`);
+          router.replace(`/login?error=${encodeURIComponent(msg)}&next=${encodeURIComponent(next)}`);
         }
       }
     }
@@ -95,7 +86,7 @@ function CallbackInner() {
   );
 }
 
-export default function AuthCallbackPage() {
+export default function AuthConfirmPage() {
   return (
     <Suspense
       fallback={
@@ -104,7 +95,7 @@ export default function AuthCallbackPage() {
         </main>
       }
     >
-      <CallbackInner />
+      <ConfirmInner />
     </Suspense>
   );
 }

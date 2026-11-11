@@ -38,15 +38,11 @@ export function HomeClient() {
         const params = new URLSearchParams(window.location.search);
         const code = params.get("code");
         if (code) {
-          const { error } = await sb.auth.exchangeCodeForSession(code);
-          if (error) throw error;
-          params.delete("code");
-          const qs = params.toString();
-          window.history.replaceState(
-            {},
-            "",
-            window.location.pathname + (qs ? `?${qs}` : ""),
+          // Always exchange on the server so the PKCE verifier cookie is used.
+          window.location.replace(
+            `/auth/callback?code=${encodeURIComponent(code)}&next=${encodeURIComponent("/")}`,
           );
+          return;
         }
 
         const u = await getSessionUser();

@@ -29,12 +29,16 @@ export function AuthForm({ next = "/" }: { next?: string }) {
         const { error: err } = await supabase.auth.signInWithOtp({
           email,
           options: {
+            // Server route exchanges PKCE using the cookie set by this client.
             emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+            shouldCreateUser: true,
             data: { phone, display_name: displayName || undefined },
           },
         });
         if (err) throw err;
-        setMessage("Check your email for the magic link.");
+        setMessage(
+          "Check your email for the magic link. Open it in this same browser.",
+        );
       } else if (mode === "signup") {
         if (password.length < 8) throw new Error("Password must be at least 8 characters");
         if (!phone.trim()) throw new Error("Add a phone number to your profile");

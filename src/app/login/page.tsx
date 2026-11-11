@@ -19,8 +19,7 @@ export default async function LoginPage({
       </p>
       {params.error && (
         <p className="anim-rise mb-4 max-w-md text-sm font-semibold text-[var(--bad)]">
-          Sign-in link failed: {params.error}. Request a new magic link or use
-          password.
+          {params.error}
         </p>
       )}
       <div className="anim-rise-delay max-w-md">
