@@ -13,3 +13,7 @@ export function getSupabaseAnonKey() {
 export function hasSupabase() {
   return Boolean(getSupabaseUrl() && getSupabaseAnonKey());
 }
+
+export function hasSupabaseEnv() {
+  return hasSupabase();
+}

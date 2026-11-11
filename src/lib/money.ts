@@ -6,16 +6,53 @@ export function fromCents(cents: number) {
   return cents / 100;
 }
 
+/** Parse user money input → integer cents. Exactly 0–2 decimal places. */
+export function parseMoneyInput(raw: string): number {
+  const t = raw.trim().replace(/,/g, "");
+  if (!t) throw new Error("Enter an amount");
+  if (!/^\d+(\.\d{1,2})?$/.test(t)) {
+    throw new Error("Amount must use up to 2 decimal places (e.g. 12.50)");
+  }
+  const cents = toCents(Number(t));
+  if (!Number.isFinite(cents) || cents <= 0) {
+    throw new Error("Amount must be greater than zero");
+  }
+  return cents;
+}
+
+export function centsToInput(cents: number): string {
+  return fromCents(cents).toFixed(2);
+}
+
 export function formatMoney(cents: number, currency = "INR") {
   try {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency,
+      minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(fromCents(cents));
   } catch {
-    return `${(cents / 100).toFixed(2)} ${currency}`;
+    return `${fromCents(cents).toFixed(2)} ${currency}`;
   }
+}
+
+/** Split total cents across ids as evenly as possible (remainder by order). */
+export function splitEqualCents(totalCents: number, ids: string[]): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (!ids.length) return out;
+  const base = Math.floor(totalCents / ids.length);
+  let rem = totalCents - base * ids.length;
+  for (const id of ids) {
+    const extra = rem > 0 ? 1 : 0;
+    if (rem > 0) rem -= 1;
+    out[id] = base + extra;
+  }
+  return out;
+}
+
+export function sumRecord(map: Record<string, number>) {
+  return Object.values(map).reduce((a, b) => a + b, 0);
 }
 
 /** Minimize cash flow: who pays whom to settle balances. */

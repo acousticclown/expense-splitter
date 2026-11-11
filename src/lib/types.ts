@@ -4,6 +4,7 @@ export type Group = {
   slug: string;
   currency: string;
   created_at: string;
+  owner_id?: string | null;
 };
 
 export type Member = {
@@ -18,7 +19,7 @@ export type Expense = {
   group_id: string;
   description: string;
   amount_cents: number;
-  paid_by: string;
+  paid_by: string | null;
   created_at: string;
 };
 
@@ -26,6 +27,12 @@ export type ExpenseShare = {
   expense_id: string;
   member_id: string;
   share_cents: number;
+};
+
+export type ExpensePayment = {
+  expense_id: string;
+  member_id: string;
+  paid_cents: number;
 };
 
 export type Settlement = {
@@ -40,5 +47,13 @@ export type Settlement = {
 
 export type ExpenseWithShares = Expense & {
   shares: ExpenseShare[];
-  payer_name?: string;
+  payments: ExpensePayment[];
+  payer_names: string[];
+};
+
+export type SavedGroup = {
+  slug: string;
+  name: string;
+  currency: string;
+  openedAt: string;
 };

@@ -3,13 +3,17 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  addExpense,
   addMember,
   computeBalances,
+  deleteExpense,
+  describePayers,
   getGroupBySlug,
   recordSettlement,
+  saveExpense,
+  type ExpenseDraft,
 } from "@/lib/splitter";
-import { formatMoney, toCents } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
+import { getSessionUser } from "@/lib/auth";
 import type {
   ExpenseWithShares,
   Group,
@@ -17,8 +21,8 @@ import type {
   Settlement,
 } from "@/lib/types";
 import { BottomNav, type TabId } from "@/components/ui/BottomNav";
-import { Select } from "@/components/ui/Select";
 import { Sheet } from "@/components/ui/Sheet";
+import { ExpenseForm } from "@/components/ExpenseForm";
 
 export function GroupWorkspace({ slug }: { slug: string }) {
   const [group, setGroup] = useState<Group | null>(null);
@@ -29,14 +33,11 @@ export function GroupWorkspace({ slug }: { slug: string }) {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<TabId>("balances");
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [editing, setEditing] = useState<ExpenseWithShares | null>(null);
   const [copied, setCopied] = useState(false);
-
-  const [desc, setDesc] = useState("");
-  const [amount, setAmount] = useState("");
-  const [paidBy, setPaidBy] = useState("");
-  const [splitIds, setSplitIds] = useState<string[]>([]);
   const [newPerson, setNewPerson] = useState("");
   const [busy, setBusy] = useState(false);
+  const [authed, setAuthed] = useState<boolean | null>(null);
 
   const reload = useCallback(async () => {
     const data = await getGroupBySlug(slug);
@@ -49,17 +50,21 @@ export function GroupWorkspace({ slug }: { slug: string }) {
     setMembers(data.members);
     setExpenses(data.expenses);
     setSettlements(data.settlements);
-    setPaidBy((prev) => prev || data.members[0]?.id || "");
-    setSplitIds((prev) =>
-      prev.length ? prev : data.members.map((m) => m.id),
-    );
     setLoading(false);
   }, [slug]);
 
   useEffect(() => {
-    reload().catch((e) => {
-      setError(e instanceof Error ? e.message : "Failed to load");
-      setLoading(false);
+    getSessionUser().then((u) => {
+      if (!u) {
+        setAuthed(false);
+        setLoading(false);
+        return;
+      }
+      setAuthed(true);
+      reload().catch((e) => {
+        setError(e instanceof Error ? e.message : "Failed to load");
+        setLoading(false);
+      });
     });
   }, [reload]);
 
@@ -68,50 +73,34 @@ export function GroupWorkspace({ slug }: { slug: string }) {
     [members, expenses, settlements],
   );
 
-  async function onAddExpense(e: React.FormEvent) {
-    e.preventDefault();
-    if (!group) return;
-    if (!paidBy || !splitIds.length) {
-      setError("Pick who paid and who shares the split");
-      return;
-    }
+  async function onSaveExpense(draft: ExpenseDraft, expenseId?: string) {
     setBusy(true);
     setError(null);
     try {
-      const saved = await addExpense({
-        groupId: group.id,
-        description: desc,
-        amount: Number(amount),
-        paidBy,
-        splitAmong: splitIds,
-      });
-      const cents = toCents(Number(amount));
-      const n = splitIds.length;
-      const base = Math.floor(cents / n);
-      let remainder = cents - base * n;
-      const optimistic: ExpenseWithShares = {
-        ...saved,
-        payer_name: members.find((m) => m.id === paidBy)?.name,
-        shares: splitIds.map((memberId) => {
-          const extra = remainder > 0 ? 1 : 0;
-          if (remainder > 0) remainder -= 1;
-          return { expense_id: saved.id, member_id: memberId, share_cents: base + extra };
-        }),
-      };
-      setExpenses((prev) => [optimistic, ...prev.filter((x) => x.id !== saved.id)]);
-      setDesc("");
-      setAmount("");
+      await saveExpense(draft, expenseId);
       setSheetOpen(false);
+      setEditing(null);
       setTab("spends");
-      setBusy(false);
-      // Refresh from server after paint; don't block the sheet close path.
-      queueMicrotask(() => {
-        void reload().catch((err) => {
-          setError(err instanceof Error ? err.message : "Could not refresh");
-        });
-      });
+      await reload();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not add expense");
+      setError(err instanceof Error ? err.message : "Could not save expense");
+      throw err;
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onDeleteExpense() {
+    if (!editing) return;
+    setBusy(true);
+    try {
+      await deleteExpense(editing.id);
+      setSheetOpen(false);
+      setEditing(null);
+      await reload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not delete");
+    } finally {
       setBusy(false);
     }
   }
@@ -121,9 +110,8 @@ export function GroupWorkspace({ slug }: { slug: string }) {
     if (!group || !newPerson.trim()) return;
     setBusy(true);
     try {
-      const m = await addMember(group.id, newPerson);
+      await addMember(group.id, newPerson);
       setNewPerson("");
-      setSplitIds((ids) => [...ids, m.id]);
       await reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not add person");
@@ -144,7 +132,7 @@ export function GroupWorkspace({ slug }: { slug: string }) {
         groupId: group.id,
         fromMember: t.fromId,
         toMember: t.toId,
-        amount: t.amountCents / 100,
+        amountCents: t.amountCents,
         note: "Marked settled",
       });
       await reload();
@@ -155,17 +143,18 @@ export function GroupWorkspace({ slug }: { slug: string }) {
     }
   }
 
-  async function copyLink() {
-    try {
-      await navigator.clipboard?.writeText(window.location.href);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1600);
-    } catch {
-      /* ignore */
-    }
+  if (authed === false) {
+    return (
+      <main className="shell space-y-4 py-16">
+        <p className="text-ink-soft">Sign in to open this group.</p>
+        <Link href={`/login?next=/g/${slug}`} className="btn btn-primary inline-flex">
+          Sign in
+        </Link>
+      </main>
+    );
   }
 
-  if (loading) {
+  if (loading || authed === null) {
     return (
       <p className="shell py-16 text-ink-soft" aria-busy>
         Loading group…
@@ -178,14 +167,13 @@ export function GroupWorkspace({ slug }: { slug: string }) {
       <main className="shell space-y-4 py-16">
         <p className="text-[var(--bad)]">{error || "Not found"}</p>
         <Link href="/" className="btn btn-ghost inline-flex">
-          ← Back home
+          ← Groups
         </Link>
       </main>
     );
   }
 
   const currency = group.currency;
-  const memberOptions = members.map((m) => ({ value: m.id, label: m.name }));
 
   return (
     <>
@@ -196,7 +184,7 @@ export function GroupWorkspace({ slug }: { slug: string }) {
               href="/"
               className="mb-2 inline-flex items-center gap-1 text-sm font-700 text-ink-soft hover:text-ink"
             >
-              ← New group
+              ← Groups
             </Link>
             <p className="text-[0.7rem] font-800 uppercase tracking-[0.14em] text-ink-soft">
               Expense Splitter
@@ -204,8 +192,21 @@ export function GroupWorkspace({ slug }: { slug: string }) {
             <h1 className="font-display mt-1 truncate text-3xl font-800 tracking-tight text-ink sm:text-5xl">
               {group.name}
             </h1>
+            <p className="mt-1 text-xs font-650 text-ink-soft">{currency}</p>
           </div>
-          <button type="button" className="btn btn-ghost text-sm" onClick={copyLink}>
+          <button
+            type="button"
+            className="btn btn-ghost text-sm"
+            onClick={async () => {
+              try {
+                await navigator.clipboard?.writeText(window.location.href);
+                setCopied(true);
+                window.setTimeout(() => setCopied(false), 1600);
+              } catch {
+                /* ignore */
+              }
+            }}
+          >
             {copied ? "Copied" : "Copy link"}
           </button>
         </header>
@@ -216,12 +217,7 @@ export function GroupWorkspace({ slug }: { slug: string }) {
           </p>
         )}
 
-        {/* Desktop side tabs */}
-        <div
-          className="hidden gap-2 md:flex"
-          role="tablist"
-          aria-label="Group sections"
-        >
+        <div className="hidden gap-2 md:flex" role="tablist" aria-label="Group sections">
           {(
             [
               ["balances", "Balances"],
@@ -243,7 +239,10 @@ export function GroupWorkspace({ slug }: { slug: string }) {
           <button
             type="button"
             className="btn btn-primary ml-auto"
-            onClick={() => setSheetOpen(true)}
+            onClick={() => {
+              setEditing(null);
+              setSheetOpen(true);
+            }}
           >
             Add expense
           </button>
@@ -255,35 +254,37 @@ export function GroupWorkspace({ slug }: { slug: string }) {
               <h2 className="font-display text-2xl font-700 tracking-tight">
                 Who owes whom
               </h2>
-              <p className="mt-1 text-sm text-ink-soft">
-                One job: clear the slate.
-              </p>
+              <p className="mt-1 text-sm text-ink-soft">Clear the slate.</p>
             </div>
-            <ul className="space-y-3">
-              {balances.map((b) => (
-                <li
-                  key={b.memberId}
-                  className="flex items-center justify-between gap-3 border-b border-[var(--line)] pb-3"
-                >
-                  <span className="font-700">{b.name}</span>
-                  <span
-                    className={
-                      b.netCents > 1
-                        ? "font-800 text-[var(--good)]"
-                        : b.netCents < -1
-                          ? "font-800 text-[var(--bad)]"
-                          : "font-650 text-ink-soft"
-                    }
+            {!members.length ? (
+              <p className="text-sm text-ink-soft">Add people to see balances.</p>
+            ) : (
+              <ul className="space-y-3">
+                {balances.map((b) => (
+                  <li
+                    key={b.memberId}
+                    className="flex items-center justify-between gap-3 border-b border-[var(--line)] pb-3"
                   >
-                    {b.netCents > 1
-                      ? `gets ${formatMoney(b.netCents, currency)}`
-                      : b.netCents < -1
-                        ? `owes ${formatMoney(-b.netCents, currency)}`
-                        : "settled"}
-                  </span>
-                </li>
-              ))}
-            </ul>
+                    <span className="font-700">{b.name}</span>
+                    <span
+                      className={
+                        b.netCents > 1
+                          ? "font-800 text-[var(--good)]"
+                          : b.netCents < -1
+                            ? "font-800 text-[var(--bad)]"
+                            : "font-650 text-ink-soft"
+                      }
+                    >
+                      {b.netCents > 1
+                        ? `gets ${formatMoney(b.netCents, currency)}`
+                        : b.netCents < -1
+                          ? `owes ${formatMoney(-b.netCents, currency)}`
+                          : "settled"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
 
             <div className="pt-2">
               <h3 className="font-display text-xl font-700">Settle up</h3>
@@ -324,34 +325,31 @@ export function GroupWorkspace({ slug }: { slug: string }) {
                 <h2 className="font-display text-2xl font-700 tracking-tight">
                   Spends
                 </h2>
-                <p className="mt-1 text-sm text-ink-soft">
-                  What got paid, and by whom.
-                </p>
+                <p className="mt-1 text-sm text-ink-soft">Tap a spend to edit.</p>
               </div>
-              <button
-                type="button"
-                className="btn btn-primary hidden sm:inline-flex md:hidden"
-                onClick={() => setSheetOpen(true)}
-              >
-                Add
-              </button>
             </div>
-            <ul className="space-y-0">
+            <ul>
               {expenses.map((e) => (
-                <li
-                  key={e.id}
-                  className="flex items-start justify-between gap-3 border-b border-[var(--line)] py-3.5"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate font-700">{e.description}</p>
-                    <p className="text-sm text-ink-soft">
-                      {e.payer_name || "Someone"} ·{" "}
-                      {new Date(e.created_at).toLocaleDateString()}
+                <li key={e.id}>
+                  <button
+                    type="button"
+                    className="flex w-full items-start justify-between gap-3 border-b border-[var(--line)] py-3.5 text-left"
+                    onClick={() => {
+                      setEditing(e);
+                      setSheetOpen(true);
+                    }}
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate font-700">{e.description}</p>
+                      <p className="text-sm text-ink-soft">
+                        {describePayers(e)} ·{" "}
+                        {new Date(e.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <p className="shrink-0 font-800">
+                      {formatMoney(e.amount_cents, currency)}
                     </p>
-                  </div>
-                  <p className="shrink-0 font-800">
-                    {formatMoney(e.amount_cents, currency)}
-                  </p>
+                  </button>
                 </li>
               ))}
               {!expenses.length && (
@@ -369,17 +367,19 @@ export function GroupWorkspace({ slug }: { slug: string }) {
               <h2 className="font-display text-2xl font-700 tracking-tight">
                 People
               </h2>
-              <p className="mt-1 text-sm text-ink-soft">Who&apos;s in this group.</p>
+              <p className="mt-1 text-sm text-ink-soft">
+                Names used for splitting (not the same as app login).
+              </p>
             </div>
             <ul className="space-y-2">
               {members.map((m) => (
-                <li
-                  key={m.id}
-                  className="border-b border-[var(--line)] py-3 font-700"
-                >
+                <li key={m.id} className="border-b border-[var(--line)] py-3 font-700">
                   {m.name}
                 </li>
               ))}
+              {!members.length && (
+                <li className="py-6 text-sm text-ink-soft">No people yet.</li>
+              )}
             </ul>
             <form onSubmit={onAddPerson} className="flex gap-2 pt-2">
               <input
@@ -388,11 +388,7 @@ export function GroupWorkspace({ slug }: { slug: string }) {
                 value={newPerson}
                 onChange={(e) => setNewPerson(e.target.value)}
               />
-              <button
-                type="submit"
-                className="btn btn-ink shrink-0"
-                disabled={busy}
-              >
+              <button type="submit" className="btn btn-ink shrink-0" disabled={busy}>
                 Add
               </button>
             </form>
@@ -400,12 +396,14 @@ export function GroupWorkspace({ slug }: { slug: string }) {
         )}
       </main>
 
-      {/* Mobile FAB for add expense */}
       <button
         type="button"
         className="fixed bottom-[calc(var(--nav-h)+var(--safe-b)+0.85rem)] right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--accent)] text-2xl font-800 text-[var(--accent-ink)] shadow-[0_12px_28px_rgba(155,196,31,0.4)] md:hidden"
         aria-label="Add expense"
-        onClick={() => setSheetOpen(true)}
+        onClick={() => {
+          setEditing(null);
+          setSheetOpen(true);
+        }}
       >
         +
       </button>
@@ -414,73 +412,22 @@ export function GroupWorkspace({ slug }: { slug: string }) {
 
       <Sheet
         open={sheetOpen}
-        title="Add expense"
-        onClose={() => setSheetOpen(false)}
+        title={editing ? "Edit expense" : "Add expense"}
+        onClose={() => {
+          setSheetOpen(false);
+          setEditing(null);
+        }}
       >
-        <form onSubmit={onAddExpense} className="space-y-4">
-          <div>
-            <label className="label" htmlFor="desc">
-              Description
-            </label>
-            <input
-              id="desc"
-              className="input"
-              required
-              value={desc}
-              onChange={(e) => setDesc(e.target.value)}
-              placeholder="Dinner, cab, groceries…"
-            />
-          </div>
-          <div>
-            <label className="label" htmlFor="amount">
-              Amount ({currency})
-            </label>
-            <input
-              id="amount"
-              className="input"
-              required
-              type="number"
-              inputMode="decimal"
-              min="0.01"
-              step="0.01"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-            />
-          </div>
-          <Select
-            label="Paid by"
-            value={paidBy}
-            onChange={setPaidBy}
-            options={memberOptions}
-            required
-          />
-          <div>
-            <p className="label">Split among</p>
-            <div className="flex flex-wrap gap-2">
-              {members.map((m) => {
-                const on = splitIds.includes(m.id);
-                return (
-                  <button
-                    key={m.id}
-                    type="button"
-                    className={`chip ${on ? "is-on" : ""}`}
-                    aria-pressed={on}
-                    onClick={() =>
-                      setSplitIds((ids) =>
-                        on ? ids.filter((id) => id !== m.id) : [...ids, m.id],
-                      )
-                    }
-                  >
-                    {m.name}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          <button type="submit" className="btn btn-primary w-full" disabled={busy}>
-            {busy ? "Saving…" : "Save expense"}
-          </button>
-        </form>
+        <ExpenseForm
+          key={editing?.id || "new"}
+          members={members}
+          currency={currency}
+          groupId={group.id}
+          initial={editing}
+          busy={busy}
+          onSubmit={onSaveExpense}
+          onDelete={editing ? onDeleteExpense : undefined}
+        />
       </Sheet>
     </>
   );
