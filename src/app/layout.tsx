@@ -1,15 +1,15 @@
-import type { Metadata } from "next";
-import { Fraunces, Manrope } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Figtree, Syne } from "next/font/google";
 import "./globals.css";
 
-const manrope = Manrope({
-  variable: "--font-manrope",
+const figtree = Figtree({
+  variable: "--font-figtree",
   subsets: ["latin"],
   display: "swap",
 });
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const syne = Syne({
+  variable: "--font-syne",
   subsets: ["latin"],
   display: "swap",
 });
@@ -23,11 +23,18 @@ export const metadata: Metadata = {
     "Lite Splitwise — split expenses, track balances, and settle up with friends.",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#f2f6ef",
+};
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${manrope.variable} ${fraunces.variable} h-full antialiased`}
+      className={`${figtree.variable} ${syne.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">{children}</body>
     </html>

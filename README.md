@@ -1,21 +1,12 @@
 # Expense Splitter
 
-Lite Splitwise for **Shivansh's Mini Apps** — create a group, log expenses, track balances, settle up.
+Lite Splitwise mini-app for [Shivansh's Mini Apps](https://shivanshs-mini-apps.vercel.app).
 
-## Stack
+- Create a shareable group (no login)
+- Add people & expenses
+- See balances and settle suggested transfers
 
-- Next.js + TypeScript + Tailwind
-- Supabase Postgres (free tier)
-- Vercel Hobby
+**Stack:** Next.js + Supabase (shared free project) + Vercel Hobby  
+**Live:** https://expense-splitter-murex-three.vercel.app
 
-## Local
-
-```bash
-cp .env.example .env.local
-npm install
-npm run dev
-```
-
-## Schema
-
-See `supabase/migrations/20261111160000_expense_splitter.sql`.
+Mobile-first UI with bottom tabs, custom select/sheet, and a lime-on-mist visual identity.

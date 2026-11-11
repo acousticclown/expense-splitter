@@ -1,26 +1,55 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { createGroup } from "@/lib/splitter";
+import { Select } from "@/components/ui/Select";
+
+const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED"].map((c) => ({
+  value: c,
+  label: c,
+}));
 
 export function CreateGroupForm() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [currency, setCurrency] = useState("INR");
-  const [people, setPeople] = useState("You, Alex, Sam");
+  const [draft, setDraft] = useState("");
+  const [people, setPeople] = useState<string[]>(["You", "Alex", "Sam"]);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
+  const canSubmit = useMemo(
+    () => name.trim().length > 0 && people.length > 0,
+    [name, people],
+  );
+
+  function addPerson() {
+    const parts = draft
+      .split(/,|\n/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+    if (!parts.length) return;
+    setPeople((prev) => {
+      const next = [...prev];
+      for (const p of parts) {
+        if (!next.some((x) => x.toLowerCase() === p.toLowerCase())) next.push(p);
+      }
+      return next;
+    });
+    setDraft("");
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!canSubmit) return;
     setPending(true);
     setError(null);
     try {
       const { group } = await createGroup({
         name,
         currency,
-        members: people.split(/,|\n/).map((p) => p.trim()).filter(Boolean),
+        members: people,
       });
       router.push(`/g/${group.slug}`);
     } catch (err) {
@@ -30,7 +59,7 @@ export function CreateGroupForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="panel space-y-4">
+    <form onSubmit={onSubmit} className="surface anim-rise-delay space-y-5 p-5 sm:p-6">
       <div>
         <label className="label" htmlFor="name">
           Group name
@@ -39,42 +68,63 @@ export function CreateGroupForm() {
           id="name"
           className="input"
           required
-          placeholder="Goa trip, Flat 4B, Weekend dinner…"
+          placeholder="Goa trip, Flat 4B…"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          autoComplete="off"
         />
       </div>
+
       <div>
-        <label className="label" htmlFor="people">
-          People (comma-separated)
-        </label>
-        <textarea
-          id="people"
-          className="textarea input min-h-24"
-          required
-          value={people}
-          onChange={(e) => setPeople(e.target.value)}
-        />
-      </div>
-      <div>
-        <label className="label" htmlFor="currency">
-          Currency
-        </label>
-        <select
-          id="currency"
-          className="select"
-          value={currency}
-          onChange={(e) => setCurrency(e.target.value)}
-        >
-          {["INR", "USD", "EUR", "GBP", "AED"].map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
+        <p className="label">People</p>
+        <div className="mb-3 flex flex-wrap gap-2">
+          {people.map((p) => (
+            <button
+              key={p}
+              type="button"
+              className="chip is-on"
+              onClick={() => setPeople((list) => list.filter((x) => x !== p))}
+              aria-label={`Remove ${p}`}
+            >
+              {p}
+              <span aria-hidden>×</span>
+            </button>
           ))}
-        </select>
+        </div>
+        <div className="flex gap-2">
+          <input
+            className="input"
+            placeholder="Add a name"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addPerson();
+              }
+            }}
+          />
+          <button type="button" className="btn btn-ink shrink-0 px-4" onClick={addPerson}>
+            Add
+          </button>
+        </div>
       </div>
-      {error && <p className="text-sm text-[var(--bad)]">{error}</p>}
-      <button type="submit" className="btn btn-primary w-full" disabled={pending}>
+
+      <Select
+        label="Currency"
+        value={currency}
+        onChange={setCurrency}
+        options={CURRENCIES}
+        required
+      />
+
+      {error && <p className="text-sm font-semibold text-[var(--bad)]">{error}</p>}
+
+      <button
+        type="submit"
+        className="btn btn-primary w-full"
+        disabled={pending || !canSubmit}
+      >
         {pending ? "Creating…" : "Create group"}
       </button>
     </form>

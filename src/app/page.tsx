@@ -3,37 +3,31 @@ import { CreateGroupForm } from "@/components/CreateGroupForm";
 
 export default function HomePage() {
   return (
-    <main className="shell py-12 sm:py-16">
-      <p className="font-display text-5xl font-700 tracking-tight text-ink sm:text-6xl">
-        Expense Splitter
-      </p>
-      <h1 className="mt-4 max-w-xl text-xl font-medium text-ink-soft sm:text-2xl">
-        Lite Splitwise — people, expenses, balances, settle up.
-      </h1>
-      <p className="mt-3 max-w-lg text-sm leading-relaxed text-ink-soft">
-        Create a group, add spends, and see who owes whom. Share the group link
-        — no accounts required.
-      </p>
-
-      <div className="mt-10 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-        <CreateGroupForm />
-        <aside className="panel self-start">
-          <p className="font-display text-2xl font-700 tracking-tight">
-            How it works
-          </p>
-          <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-ink-soft">
-            <li>Name the group and list everyone.</li>
-            <li>Log expenses with who paid and who shared.</li>
-            <li>Check balances and settle suggested transfers.</li>
-          </ol>
-          <Link
-            href="https://shivanshs-mini-apps.vercel.app"
-            className="btn btn-ghost mt-6 text-sm"
-          >
-            ← Shivansh&apos;s Mini Apps
-          </Link>
-        </aside>
+    <main className="shell flex min-h-[100dvh] flex-col justify-center py-10 sm:py-16">
+      <div className="anim-rise max-w-xl">
+        <p className="font-display text-[clamp(2.75rem,12vw,4.75rem)] font-800 leading-[0.92] tracking-tight text-ink">
+          Expense
+          <br />
+          Splitter
+        </p>
+        <p className="mt-5 max-w-md text-base leading-relaxed text-ink-soft sm:text-lg">
+          Split spends, see who owes whom, settle up. Share one link — no
+          accounts.
+        </p>
       </div>
+
+      <div className="mt-8 max-w-lg sm:mt-10">
+        <CreateGroupForm />
+      </div>
+
+      <p className="mt-8 text-sm text-ink-soft">
+        <Link
+          href="https://shivanshs-mini-apps.vercel.app"
+          className="font-semibold text-ink underline decoration-[var(--accent-deep)] underline-offset-4"
+        >
+          ← Shivansh&apos;s Mini Apps
+        </Link>
+      </p>
     </main>
   );
 }
