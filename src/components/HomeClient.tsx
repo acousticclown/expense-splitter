@@ -126,7 +126,7 @@ export function HomeClient() {
   return (
     <>
       <main className="shell page-pad space-y-8 py-8 sm:py-12">
-        <header className="anim-rise flex items-center justify-between gap-4">
+        <header className="home-topbar anim-rise flex items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="text-[0.68rem] font-800 uppercase tracking-[0.16em] text-ink-soft">
               Stub Ledger
@@ -138,7 +138,7 @@ export function HomeClient() {
           <AccountMenu profile={profile} email={user.email || ""} />
         </header>
 
-        <div className="anim-rise-delay">
+        <div className="anim-rise-delay relative z-0">
           <GroupsList onCreate={() => setCreateOpen(true)} />
         </div>
 

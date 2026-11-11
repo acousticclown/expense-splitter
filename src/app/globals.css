@@ -254,8 +254,15 @@ body > * {
   position: relative;
 }
 
+/* Header must sit above animated page siblings (rise creates stacking contexts). */
+.home-topbar {
+  position: relative;
+  z-index: 60;
+}
+
 .account-menu {
   position: relative;
+  z-index: 61;
   flex-shrink: 0;
 }
 
@@ -282,11 +289,11 @@ body > * {
   position: absolute;
   top: calc(100% + 0.45rem);
   right: 0;
-  z-index: 50;
+  z-index: 70;
   min-width: 12.5rem;
   border: 1px solid var(--line);
   border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.97);
+  background: #fff;
   box-shadow: 0 16px 36px rgba(14, 28, 22, 0.14);
   padding: 0.4rem;
 }
