@@ -58,7 +58,7 @@ export function BottomNav({
 }) {
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--line)] bg-[rgba(242,246,239,0.92)] px-3 pt-2 backdrop-blur-xl md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--line)] bg-[rgba(242,246,239,0.96)] px-3 pt-2 backdrop-blur-xl supports-[backdrop-filter]:bg-[rgba(242,246,239,0.88)] md:hidden"
       style={{ paddingBottom: "calc(0.55rem + env(safe-area-inset-bottom, 0px))" }}
       aria-label="Group sections"
     >

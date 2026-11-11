@@ -71,6 +71,10 @@ export function GroupWorkspace({ slug }: { slug: string }) {
   async function onAddExpense(e: React.FormEvent) {
     e.preventDefault();
     if (!group) return;
+    if (!paidBy || !splitIds.length) {
+      setError("Pick who paid and who shares the split");
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -85,6 +89,8 @@ export function GroupWorkspace({ slug }: { slug: string }) {
       setAmount("");
       setSheetOpen(false);
       setTab("spends");
+      // Ensure PostgREST sees the just-written rows before we re-read.
+      await new Promise((r) => setTimeout(r, 150));
       await reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not add expense");
@@ -380,7 +386,7 @@ export function GroupWorkspace({ slug }: { slug: string }) {
       {/* Mobile FAB for add expense */}
       <button
         type="button"
-        className="fixed bottom-[calc(var(--nav-h)+var(--safe-b)+0.75rem)] right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--accent)] text-2xl font-800 text-[var(--accent-ink)] shadow-[0_12px_28px_rgba(155,196,31,0.4)] md:hidden"
+        className="fixed bottom-[calc(var(--nav-h)+var(--safe-b)+0.85rem)] right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--accent)] text-2xl font-800 text-[var(--accent-ink)] shadow-[0_12px_28px_rgba(155,196,31,0.4)] md:hidden"
         aria-label="Add expense"
         onClick={() => setSheetOpen(true)}
       >
