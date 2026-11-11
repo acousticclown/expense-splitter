@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #14231f;
+  --ink-soft: #3d524b;
+  --paper: #f3f7f5;
+  --accent: #0f766e;
+  --accent-deep: #0a5c56;
+  --line: rgba(20, 35, 31, 0.12);
+  --good: #166534;
+  --bad: #b91c1c;
+  --background: var(--paper);
+  --foreground: var(--ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-paper: var(--paper);
+  --color-accent: var(--accent);
+  --color-accent-deep: var(--accent-deep);
+  --font-sans: var(--font-manrope);
+  --font-display: var(--font-fraunces);
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  color: var(--ink);
+  background:
+    radial-gradient(900px 480px at 10% -10%, rgba(15, 118, 110, 0.14), transparent 55%),
+    radial-gradient(700px 420px at 90% 0%, rgba(20, 35, 31, 0.06), transparent 50%),
+    linear-gradient(180deg, #eef5f2 0%, var(--paper) 40%, #e9f0ed 100%);
+  font-family: var(--font-manrope), "Manrope", sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-fraunces), "Fraunces", serif;
+}
+
+.shell {
+  width: min(920px, calc(100% - 2rem));
+  margin-inline: auto;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding: 0.75rem 1.2rem;
+  font-weight: 700;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--accent-deep);
+}
+
+.btn-ink {
+  background: var(--ink);
+  color: white;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 0.9rem;
+  padding: 0.75rem 0.9rem;
+  outline: none;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+}
+
+.label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 0.35rem;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.78);
+  border-radius: 1.35rem;
+  padding: 1.25rem;
+}
