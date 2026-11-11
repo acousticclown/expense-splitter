@@ -84,7 +84,7 @@ export function HomeClient() {
   if (loading) {
     return (
       <main className="shell flex min-h-[40vh] items-center justify-center py-16">
-        <Loader label="Warming the stamp pad…" />
+        <Loader />
       </main>
     );
   }
@@ -106,8 +106,7 @@ export function HomeClient() {
             Splitter
           </p>
           <p className="mt-5 max-w-md text-base leading-relaxed text-ink-soft sm:text-lg">
-            Tear off a stub, stamp the spends, settle the crew. One shared login
-            across Shivansh&apos;s Mini Apps.
+            Split spends. Settle the crew. Shared Mini Apps login.
           </p>
           {bootError && (
             <p className="mt-4 text-sm font-semibold text-[var(--bad)]">{bootError}</p>
@@ -150,9 +149,6 @@ export function HomeClient() {
         title="New stub"
         onClose={() => setCreateOpen(false)}
       >
-        <p className="mb-4 text-sm text-ink-soft">
-          Name the trip, stamp the crew, pick a currency.
-        </p>
         <CreateGroupForm />
       </Sheet>
     </>

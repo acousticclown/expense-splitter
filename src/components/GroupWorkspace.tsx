@@ -164,7 +164,7 @@ export function GroupWorkspace({ slug }: { slug: string }) {
   if (loading || authed === null) {
     return (
       <main className="shell flex min-h-[40vh] items-center justify-center py-16">
-        <Loader label="Finding the stub…" />
+        <Loader />
       </main>
     );
   }
@@ -255,56 +255,64 @@ export function GroupWorkspace({ slug }: { slug: string }) {
         </div>
 
         {tab === "settle" && (
-          <section aria-label="Settle" className="space-y-4">
-            <div>
-              <h2 className="font-display text-2xl font-800 tracking-tight">Settle</h2>
-              <p className="mt-1 text-sm text-ink-soft">Who owes whom — mark paid when cash moves.</p>
-            </div>
-            <div className="perforation" aria-hidden />
+          <section aria-label="Settle" className="space-y-5">
+            <h2 className="font-display text-2xl font-800 tracking-tight">Settle</h2>
             {!members.length ? (
-              <EmptyStage
-                title="Crew missing"
-                body="Add people on the Crew tab before balances make sense."
-              />
+              <EmptyStage title="No crew yet" body="Add people on Crew." />
             ) : (
               <>
-                <ul>
-                  {balances.map((b) => (
-                    <li key={b.memberId} className="stub-row cursor-default">
-                      <span className="font-800">{b.name}</span>
-                      <span
-                        className={
-                          b.netCents > 1
-                            ? "font-800 text-[var(--mark)]"
+                <div className="balance-board">
+                  <div className="balance-head" aria-hidden>
+                    <span>Name</span>
+                    <span>Balance</span>
+                  </div>
+                  <ul className="balance-list">
+                    {balances.map((b) => (
+                      <li key={b.memberId} className="balance-row">
+                        <span className="font-800">{b.name}</span>
+                        <span
+                          className={
+                            b.netCents > 1
+                              ? "balance-amt is-credit"
+                              : b.netCents < -1
+                                ? "balance-amt is-debt"
+                                : "balance-amt is-zero"
+                          }
+                        >
+                          {b.netCents > 1
+                            ? `+${formatMoney(b.netCents, currency)}`
                             : b.netCents < -1
-                              ? "font-800 text-[var(--accent-deep)]"
-                              : "font-650 text-ink-soft"
-                        }
-                      >
-                        {b.netCents > 1
-                          ? `gets ${formatMoney(b.netCents, currency)}`
-                          : b.netCents < -1
-                            ? `owes ${formatMoney(-b.netCents, currency)}`
-                            : "settled"}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                {transfers.length ? (
-                  <div className="pt-2">
-                    <p className="label">To clear it</p>
-                    <ul>
+                              ? `−${formatMoney(-b.netCents, currency)}`
+                              : "—"}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="transfer-block">
+                  <p className="label">Transfers</p>
+                  {!transfers.length ? (
+                    <p className="transfer-empty">All square.</p>
+                  ) : (
+                    <ul className="transfer-list">
                       {transfers.map((t) => (
                         <li
                           key={`${t.fromId}-${t.toId}-${t.amountCents}`}
-                          className="stub-row cursor-default"
+                          className="transfer-row"
                         >
-                          <p className="text-sm">
-                            <strong>{t.fromName}</strong> → <strong>{t.toName}</strong>
-                            <span className="mt-0.5 block font-800">
+                          <div className="min-w-0">
+                            <p className="transfer-route">
+                              <span className="font-800">{t.fromName}</span>
+                              <span className="transfer-arrow" aria-hidden>
+                                →
+                              </span>
+                              <span className="font-800">{t.toName}</span>
+                            </p>
+                            <p className="transfer-amt">
                               {formatMoney(t.amountCents, currency)}
-                            </span>
-                          </p>
+                            </p>
+                          </div>
                           <button
                             type="button"
                             className="btn btn-ink px-3 py-2 text-xs"
@@ -316,10 +324,8 @@ export function GroupWorkspace({ slug }: { slug: string }) {
                         </li>
                       ))}
                     </ul>
-                  </div>
-                ) : (
-                  <p className="pt-1 text-sm font-650 text-ink-soft">All square — nice.</p>
-                )}
+                  )}
+                </div>
               </>
             )}
           </section>
@@ -327,15 +333,22 @@ export function GroupWorkspace({ slug }: { slug: string }) {
 
         {tab === "ledger" && (
           <section aria-label="Ledger" className="space-y-4">
-            <div>
+            <div className="flex items-end justify-between gap-3">
               <h2 className="font-display text-2xl font-800 tracking-tight">Ledger</h2>
-              <p className="mt-1 text-sm text-ink-soft">Tap a line to edit.</p>
+              <button
+                type="button"
+                className="btn btn-ghost hidden text-sm md:inline-flex"
+                onClick={() => {
+                  setEditing(null);
+                  setSheetOpen(true);
+                }}
+              >
+                + Spend
+              </button>
             </div>
-            <div className="perforation" aria-hidden />
             {!expenses.length ? (
               <EmptyStage
-                title="Blank ledger"
-                body="Stamp the first spend."
+                title="No entries"
                 action={
                   <button
                     type="button"
@@ -345,84 +358,90 @@ export function GroupWorkspace({ slug }: { slug: string }) {
                       setSheetOpen(true);
                     }}
                   >
-                    Stamp expense
+                    Add spend
                   </button>
                 }
               />
             ) : (
-              <ul>
-                {expenses.map((e) => (
-                  <li key={e.id}>
-                    <button
-                      type="button"
-                      className="stub-row"
-                      onClick={() => {
-                        setEditing(e);
-                        setSheetOpen(true);
-                      }}
-                    >
-                      <div className="min-w-0">
-                        <p className="truncate font-800">{e.description}</p>
-                        <p className="text-sm text-ink-soft">
-                          {describePayers(e)} ·{" "}
-                          {new Date(e.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <p className="shrink-0 font-800">
-                        {formatMoney(e.amount_cents, currency)}
-                      </p>
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              <div className="ledger-book">
+                <div className="ledger-rule-head" aria-hidden>
+                  <span>Date</span>
+                  <span>Entry</span>
+                  <span className="text-right">Amount</span>
+                </div>
+                <ul className="ledger-rows">
+                  {expenses.map((e) => (
+                    <li key={e.id}>
+                      <button
+                        type="button"
+                        className="ledger-row"
+                        onClick={() => {
+                          setEditing(e);
+                          setSheetOpen(true);
+                        }}
+                      >
+                        <span className="ledger-date">
+                          {new Date(e.created_at).toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                        <span className="ledger-entry min-w-0">
+                          <span className="ledger-desc">{e.description}</span>
+                          <span className="ledger-meta">{describePayers(e)}</span>
+                        </span>
+                        <span className="ledger-amount">
+                          {formatMoney(e.amount_cents, currency)}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </section>
         )}
 
         {tab === "crew" && (
           <section aria-label="Crew" className="space-y-4">
-            <div>
-              <h2 className="font-display text-2xl font-800 tracking-tight">Crew</h2>
-              <p className="mt-1 text-sm text-ink-soft">
-                Name or email — emails stay pending until they join.
-              </p>
-            </div>
-            <div className="perforation" aria-hidden />
+            <h2 className="font-display text-2xl font-800 tracking-tight">Crew</h2>
             {!members.length ? (
-              <EmptyStage title="Nobody here yet" body="Add the first name or email below." />
+              <EmptyStage title="Empty roster" />
             ) : (
-              <ul>
+              <ul className="crew-roster">
                 {members.map((m) => (
-                  <li key={m.id} className="stub-row cursor-default">
-                    <span className="min-w-0">
-                      <span className="block font-800">{m.name}</span>
+                  <li key={m.id} className="crew-roster-row">
+                    <span className="crew-roster-avatar" aria-hidden>
+                      {(m.name[0] || "?").toUpperCase()}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-800">{m.name}</span>
                       {m.email ? (
-                        <span className="text-xs text-ink-soft">{m.email}</span>
+                        <span className="block truncate text-xs text-ink-soft">
+                          {m.email}
+                        </span>
                       ) : null}
                     </span>
                     <span
-                      className={`text-xs font-800 uppercase tracking-wide ${
+                      className={`crew-status ${
                         m.status === "pending"
-                          ? "text-[var(--accent-deep)]"
+                          ? "is-pending"
                           : m.status === "claimed"
-                            ? "text-[var(--mark)]"
-                            : "text-ink-soft"
+                            ? "is-claimed"
+                            : "is-named"
                       }`}
                     >
                       {m.status === "pending"
                         ? "Pending"
                         : m.status === "claimed"
                           ? "Joined"
-                          : "Named"}
+                          : "Guest"}
                     </span>
                   </li>
                 ))}
               </ul>
             )}
-            <form
-              onSubmit={onAddPerson}
-              className="flex gap-2 border-t border-dashed border-[var(--line)] pt-4"
-            >
+            <form onSubmit={onAddPerson} className="crew-add-bar">
               <input
                 className="input"
                 placeholder="Name or email"

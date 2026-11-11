@@ -26,7 +26,7 @@ export function GroupsList({ onCreate, refreshKey = 0 }: Props) {
   }, [refreshKey]);
 
   if (loading) {
-    return <Loader label="Pulling your stubs…" />;
+    return <Loader />;
   }
 
   if (error) {
@@ -37,10 +37,9 @@ export function GroupsList({ onCreate, refreshKey = 0 }: Props) {
     return (
       <EmptyStage
         title="No stubs yet"
-        body="Trips, flatmates, or that dinner that never settled."
         action={
           <button type="button" className="btn btn-primary" onClick={onCreate}>
-            Tear off a stub
+            New stub
           </button>
         }
       />
@@ -54,7 +53,6 @@ export function GroupsList({ onCreate, refreshKey = 0 }: Props) {
           <h1 className="font-display text-2xl font-800 tracking-tight sm:text-3xl">
             Your stubs
           </h1>
-          <p className="mt-1 text-sm text-ink-soft">Tap one to open.</p>
         </div>
         <button type="button" className="btn btn-ghost text-sm" onClick={onCreate}>
           New stub

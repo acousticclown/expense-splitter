@@ -10,7 +10,7 @@ import {
 export function CrewEditor({
   value,
   onChange,
-  helper = "Email stays pending until they join Mini Apps.",
+  helper = "Email invites claim on signup.",
 }: {
   value: CrewDraft[];
   onChange: (next: CrewDraft[]) => void;

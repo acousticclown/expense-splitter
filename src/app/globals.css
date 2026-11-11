@@ -461,6 +461,277 @@ body > * {
   z-index: 70;
 }
 
+/* Settle — balance board */
+.balance-board {
+  border: 1px solid var(--line);
+  border-radius: 1.15rem;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.balance-head,
+.balance-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.85rem 1rem;
+}
+
+.balance-head {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--line);
+  background: rgba(14, 28, 22, 0.04);
+}
+
+.balance-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.balance-row {
+  border-bottom: 1px dashed var(--line);
+}
+
+.balance-row:last-child {
+  border-bottom: 0;
+}
+
+.balance-amt {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.balance-amt.is-credit {
+  color: var(--mark);
+}
+
+.balance-amt.is-debt {
+  color: var(--accent-deep);
+}
+
+.balance-amt.is-zero {
+  color: var(--ink-soft);
+}
+
+.transfer-block {
+  margin-top: 0.25rem;
+}
+
+.transfer-list {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0;
+}
+
+.transfer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px dashed var(--line);
+}
+
+.transfer-row:last-child {
+  border-bottom: 0;
+}
+
+.transfer-route {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.transfer-arrow {
+  color: var(--ink-soft);
+}
+
+.transfer-amt {
+  margin: 0.2rem 0 0;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.transfer-empty {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  font-weight: 650;
+  color: var(--ink-soft);
+}
+
+/* Ledger — ruled stub book */
+.ledger-book {
+  border: 1px solid var(--line);
+  border-radius: 1.15rem;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(
+      transparent,
+      transparent 2.55rem,
+      rgba(14, 28, 22, 0.05) 2.55rem,
+      rgba(14, 28, 22, 0.05) 2.56rem
+    ),
+    rgba(255, 255, 255, 0.62);
+}
+
+.ledger-rule-head {
+  display: grid;
+  grid-template-columns: 3.4rem minmax(0, 1fr) 5.5rem;
+  gap: 0.65rem;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  border-bottom: 1.5px solid var(--ink);
+  background: rgba(14, 28, 22, 0.05);
+}
+
+.ledger-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ledger-row {
+  display: grid;
+  grid-template-columns: 3.4rem minmax(0, 1fr) 5.5rem;
+  gap: 0.65rem;
+  align-items: start;
+  width: 100%;
+  margin: 0;
+  padding: 0.7rem 0.9rem;
+  border: 0;
+  border-bottom: 1px solid rgba(14, 28, 22, 0.08);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ledger-row:last-child {
+  border-bottom: 0;
+}
+
+.ledger-row:hover {
+  background: rgba(255, 79, 26, 0.06);
+}
+
+.ledger-date {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  padding-top: 0.15rem;
+}
+
+.ledger-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.ledger-desc {
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ledger-meta {
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ledger-amount {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  padding-top: 0.1rem;
+}
+
+/* Crew roster */
+.crew-roster {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 1.15rem;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.crew-roster-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 0.9rem;
+  border-bottom: 1px dashed var(--line);
+}
+
+.crew-roster-row:last-child {
+  border-bottom: 0;
+}
+
+.crew-roster-avatar {
+  display: grid;
+  place-items: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.crew-status {
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+}
+
+.crew-status.is-pending {
+  color: var(--accent-deep);
+  border-style: dashed;
+  background: rgba(255, 79, 26, 0.08);
+}
+
+.crew-status.is-claimed {
+  color: var(--good);
+  background: rgba(15, 122, 88, 0.08);
+}
+
+.crew-status.is-named {
+  color: var(--ink-soft);
+}
+
+.crew-add-bar {
+  display: flex;
+  gap: 0.5rem;
+  padding-top: 0.25rem;
+}
+
 .stub-row {
   display: flex;
   align-items: center;
