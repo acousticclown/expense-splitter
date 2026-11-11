@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { TextLink } from "@shivansh/mini-app-ui";
+import { BoxyButton } from "@/components/BoxyButton";
 import { createClient } from "@/lib/supabase/client";
 import { ensureProfile } from "@/lib/auth";
 
@@ -160,7 +161,7 @@ export function AuthForm({ next = "/" }: { next?: string }) {
       {error && <p className="text-sm font-semibold text-[var(--bad)]">{error}</p>}
       {message && <p className="text-sm font-650 text-[var(--good)]">{message}</p>}
 
-      <button type="submit" className="btn btn-primary w-full" disabled={pending}>
+      <BoxyButton type="submit" disabled={pending}>
         {pending
           ? "Working…"
           : mode === "magic"
@@ -168,7 +169,7 @@ export function AuthForm({ next = "/" }: { next?: string }) {
             : mode === "signup"
               ? "Sign up"
               : "Sign in"}
-      </button>
+      </BoxyButton>
 
       <div className="flex flex-col items-center gap-1.5 pt-1">
         {mode !== "magic" && (

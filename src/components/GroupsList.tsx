@@ -38,8 +38,11 @@ export function GroupsList({ onCreate, refreshKey = 0 }: Props) {
       <EmptyStage
         title="No stubs yet"
         action={
-          <button type="button" className="btn btn-primary" onClick={onCreate}>
-            New stub
+          <button type="button" className="btn-boxy-split" onClick={onCreate}>
+            <span className="btn-boxy-split-label">New stub</span>
+            <span className="btn-boxy-split-arrow" aria-hidden>
+              →
+            </span>
           </button>
         }
       />
@@ -68,7 +71,9 @@ export function GroupsList({ onCreate, refreshKey = 0 }: Props) {
                   {g.currency} · {new Date(g.created_at).toLocaleDateString()}
                 </span>
               </span>
-              <span className="stub-card-open">Open</span>
+              <span className="stub-card-open" aria-hidden>
+                →
+              </span>
             </Link>
           </li>
         ))}

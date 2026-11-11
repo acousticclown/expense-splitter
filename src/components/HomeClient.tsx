@@ -107,8 +107,13 @@ export function HomeClient() {
           {bootError && (
             <p className="mt-4 text-sm font-semibold text-[var(--bad)]">{bootError}</p>
           )}
-          <Link href="/login" className="btn btn-primary mt-7 inline-flex">
-            Sign in / Sign up
+          <Link href="/login" className="mt-7 block no-underline">
+            <span className="btn-boxy-split pointer-events-none">
+              <span className="btn-boxy-split-label">Sign in / Sign up</span>
+              <span className="btn-boxy-split-arrow" aria-hidden>
+                →
+              </span>
+            </span>
           </Link>
         </div>
         <AppCredit />

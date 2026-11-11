@@ -152,9 +152,14 @@ export function GroupWorkspace({ slug }: { slug: string }) {
           title="Stub locked"
           body="Sign in with your Mini Apps account to open this group."
           action={
-            <Link href={`/login?next=/g/${slug}`} className="btn btn-primary inline-flex">
-              Sign in
-            </Link>
+        <Link href={`/login?next=/g/${slug}`} className="block no-underline">
+          <span className="btn-boxy-split pointer-events-none">
+            <span className="btn-boxy-split-label">Sign in</span>
+            <span className="btn-boxy-split-arrow" aria-hidden>
+              →
+            </span>
+          </span>
+        </Link>
           }
         />
       </main>
@@ -243,13 +248,16 @@ export function GroupWorkspace({ slug }: { slug: string }) {
           {tab === "ledger" && (
             <button
               type="button"
-              className="btn btn-primary ml-auto"
+              className="btn-boxy-split ml-auto max-w-[14rem]"
               onClick={() => {
                 setEditing(null);
                 setSheetOpen(true);
               }}
             >
-              Add spend
+              <span className="btn-boxy-split-label">Add spend</span>
+              <span className="btn-boxy-split-arrow" aria-hidden>
+                →
+              </span>
             </button>
           )}
         </div>
@@ -361,13 +369,16 @@ export function GroupWorkspace({ slug }: { slug: string }) {
                 action={
                   <button
                     type="button"
-                    className="btn btn-primary"
+                    className="btn-boxy-split"
                     onClick={() => {
                       setEditing(null);
                       setSheetOpen(true);
                     }}
                   >
-                    Add spend
+                    <span className="btn-boxy-split-label">Add spend</span>
+                    <span className="btn-boxy-split-arrow" aria-hidden>
+                      →
+                    </span>
                   </button>
                 }
               />

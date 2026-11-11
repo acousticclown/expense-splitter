@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { BoxyButton } from "@/components/BoxyButton";
 import { CrewEditor } from "@/components/CrewEditor";
 import { Select } from "@/components/ui/Select";
 import { selfCrew, type CrewDraft } from "@/lib/crew";
@@ -90,13 +91,9 @@ export function CreateGroupForm() {
 
       {error && <p className="text-sm font-semibold text-[var(--bad)]">{error}</p>}
 
-      <button
-        type="submit"
-        className="btn btn-primary w-full"
-        disabled={pending || !canSubmit}
-      >
-        {pending ? "Stamping…" : "Tear off stub"}
-      </button>
+      <BoxyButton type="submit" disabled={pending || !canSubmit}>
+        {pending ? "Creating…" : "Tear off stub"}
+      </BoxyButton>
     </form>
   );
 }

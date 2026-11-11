@@ -102,8 +102,13 @@ export default function ProfilePage() {
         </div>
         {error && <p className="text-sm font-semibold text-[var(--bad)]">{error}</p>}
         {message && <p className="text-sm font-650 text-[var(--good)]">{message}</p>}
-        <button type="submit" className="btn btn-primary w-full" disabled={pending}>
-          {pending ? "Saving…" : "Save profile"}
+        <button type="submit" className="btn-boxy-split" disabled={pending}>
+          <span className="btn-boxy-split-label">
+            {pending ? "Saving…" : "Save profile"}
+          </span>
+          <span className="btn-boxy-split-arrow" aria-hidden>
+            →
+          </span>
         </button>
       </form>
     </main>

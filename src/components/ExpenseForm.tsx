@@ -302,8 +302,13 @@ export function ExpenseForm({
 
       {error && <p className="text-sm font-semibold text-[var(--bad)]">{error}</p>}
 
-      <button type="submit" className="btn btn-primary w-full" disabled={busy}>
-        {busy ? "Saving…" : initial ? "Save changes" : "Save expense"}
+      <button type="submit" className="btn-boxy-split" disabled={busy}>
+        <span className="btn-boxy-split-label">
+          {busy ? "Saving…" : initial ? "Save changes" : "Save expense"}
+        </span>
+        <span className="btn-boxy-split-arrow" aria-hidden>
+          →
+        </span>
       </button>
 
       {initial && onDelete && (
