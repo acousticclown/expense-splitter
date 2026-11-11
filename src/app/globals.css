@@ -254,6 +254,73 @@ body > * {
   position: relative;
 }
 
+.account-menu {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.account-avatar {
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform var(--motion-stamp);
+}
+
+.account-avatar:active {
+  transform: scale(0.96);
+}
+
+.account-popover {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  right: 0;
+  z-index: 50;
+  min-width: 12.5rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 16px 36px rgba(14, 28, 22, 0.14);
+  padding: 0.4rem;
+}
+
+.account-popover-meta {
+  padding: 0.65rem 0.75rem 0.55rem;
+  border-bottom: 1px dashed var(--line);
+  margin-bottom: 0.25rem;
+}
+
+.account-popover-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  border-radius: 0.75rem;
+  padding: 0.7rem 0.75rem;
+  text-align: left;
+  font: inherit;
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.account-popover-item:hover {
+  background: rgba(14, 28, 22, 0.06);
+}
+
+.account-popover-danger {
+  color: var(--bad);
+}
+
 .stub-row {
   display: flex;
   align-items: center;

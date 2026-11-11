@@ -2,16 +2,17 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { AccountMenu } from "@/components/AccountMenu";
 import { CreateGroupForm } from "@/components/CreateGroupForm";
 import { GroupsList } from "@/components/GroupsList";
 import {
   ensureProfile,
   getSessionUser,
-  signOut,
   type AppProfile,
 } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/client";
 import { Loader } from "@/components/ui/Loader";
+import { Sheet } from "@/components/ui/Sheet";
 import type { User } from "@supabase/supabase-js";
 
 export function HomeClient() {
@@ -19,6 +20,7 @@ export function HomeClient() {
   const [profile, setProfile] = useState<AppProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [bootError, setBootError] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -93,10 +95,6 @@ export function HomeClient() {
           className="pointer-events-none absolute -right-10 top-16 h-40 w-40 rotate-12 rounded-[1.25rem] bg-[var(--accent)]/25 blur-[1px]"
           aria-hidden
         />
-        <div
-          className="pointer-events-none absolute left-[-2rem] top-[28%] h-24 w-56 -rotate-6 rounded-full border border-[var(--line)] bg-white/40"
-          aria-hidden
-        />
         <div className="anim-rise relative max-w-xl">
           <p className="text-[0.72rem] font-800 uppercase tracking-[0.18em] text-ink-soft">
             Stub Ledger
@@ -122,60 +120,44 @@ export function HomeClient() {
   }
 
   return (
-    <main className="shell page-pad space-y-10 py-10 sm:py-14">
-      <header className="anim-rise flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-[0.72rem] font-800 uppercase tracking-[0.18em] text-ink-soft">
-            Stub Ledger
-          </p>
-          <p className="font-display mt-2 text-[clamp(2.4rem,10vw,3.75rem)] font-800 leading-[0.9] tracking-tight">
-            Expense Splitter
-          </p>
-          <p className="mt-3 text-sm text-ink-soft">
-            Hi {profile?.display_name || user.email}
-            {profile?.phone ? ` · ${profile.phone}` : " · add phone in profile"}
-          </p>
+    <>
+      <main className="shell page-pad space-y-8 py-8 sm:py-12">
+        <header className="anim-rise flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-[0.68rem] font-800 uppercase tracking-[0.16em] text-ink-soft">
+              Stub Ledger
+            </p>
+            <p className="font-display truncate text-xl font-800 tracking-tight sm:text-2xl">
+              Expense Splitter
+            </p>
+          </div>
+          <AccountMenu profile={profile} email={user.email || ""} />
+        </header>
+
+        <div className="anim-rise-delay">
+          <GroupsList onCreate={() => setCreateOpen(true)} />
         </div>
-        <div className="flex gap-2">
-          <Link href="/profile" className="btn btn-ghost text-sm">
-            Profile
-          </Link>
-          <button
-            type="button"
-            className="btn btn-ink text-sm"
-            onClick={async () => {
-              await signOut();
-              window.location.href = "/";
-            }}
+
+        <p className="text-sm text-ink-soft">
+          <Link
+            href="https://shivanshs-mini-apps.vercel.app"
+            className="font-semibold text-ink underline decoration-[var(--accent)] underline-offset-4"
           >
-            Sign out
-          </button>
-        </div>
-      </header>
+            ← Shivansh&apos;s Mini Apps
+          </Link>
+        </p>
+      </main>
 
-      <div className="anim-rise-delay">
-        <GroupsList />
-      </div>
-
-      <section className="anim-rise-delay max-w-lg">
-        <div className="perforation" aria-hidden />
-        <h2 className="font-display mb-1 text-2xl font-800 tracking-tight">
-          New stub
-        </h2>
+      <Sheet
+        open={createOpen}
+        title="New stub"
+        onClose={() => setCreateOpen(false)}
+      >
         <p className="mb-4 text-sm text-ink-soft">
           Name the trip, stamp the crew, pick a currency.
         </p>
         <CreateGroupForm />
-      </section>
-
-      <p className="text-sm text-ink-soft">
-        <Link
-          href="https://shivanshs-mini-apps.vercel.app"
-          className="font-semibold text-ink underline decoration-[var(--accent)] underline-offset-4"
-        >
-          ← Shivansh&apos;s Mini Apps
-        </Link>
-      </p>
-    </main>
+      </Sheet>
+    </>
   );
 }

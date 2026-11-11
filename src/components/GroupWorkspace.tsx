@@ -185,24 +185,22 @@ export function GroupWorkspace({ slug }: { slug: string }) {
   return (
     <>
       <main className="shell page-pad anim-rise space-y-5 pt-5 sm:space-y-7 sm:pt-10">
-        <header className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <Link
-              href="/"
-              className="mb-2 inline-flex items-center gap-1 text-sm font-700 text-ink-soft hover:text-ink"
-            >
-              ← Stubs
-            </Link>
-            <p className="text-[0.7rem] font-800 uppercase tracking-[0.16em] text-ink-soft">
-              Expense Splitter · {currency}
-            </p>
-            <h1 className="font-display mt-1 truncate text-3xl font-800 tracking-tight text-ink sm:text-5xl">
-              {group.name}
-            </h1>
-          </div>
+        <header className="min-w-0">
+          <Link
+            href="/"
+            className="mb-2 inline-flex items-center gap-1 text-sm font-700 text-ink-soft hover:text-ink"
+          >
+            ← Stubs
+          </Link>
+          <p className="text-[0.7rem] font-800 uppercase tracking-[0.16em] text-ink-soft">
+            {currency}
+          </p>
+          <h1 className="font-display mt-1 truncate text-3xl font-800 tracking-tight text-ink sm:text-4xl">
+            {group.name}
+          </h1>
           <button
             type="button"
-            className="btn btn-ghost text-sm"
+            className="mt-2 text-sm font-700 text-ink-soft underline decoration-[var(--line)] underline-offset-4 hover:text-ink"
             onClick={async () => {
               try {
                 await navigator.clipboard?.writeText(window.location.href);
@@ -213,7 +211,7 @@ export function GroupWorkspace({ slug }: { slug: string }) {
               }
             }}
           >
-            {copied ? "Copied" : "Copy link"}
+            {copied ? "Link copied" : "Copy share link"}
           </button>
         </header>
 
@@ -242,25 +240,25 @@ export function GroupWorkspace({ slug }: { slug: string }) {
               {label}
             </button>
           ))}
-          <button
-            type="button"
-            className="btn btn-primary ml-auto"
-            onClick={() => {
-              setEditing(null);
-              setSheetOpen(true);
-            }}
-          >
-            Stamp expense
-          </button>
+          {tab === "ledger" && (
+            <button
+              type="button"
+              className="btn btn-primary ml-auto"
+              onClick={() => {
+                setEditing(null);
+                setSheetOpen(true);
+              }}
+            >
+              Stamp expense
+            </button>
+          )}
         </div>
 
         {tab === "settle" && (
-          <section aria-label="Settle" className="space-y-5">
+          <section aria-label="Settle" className="space-y-4">
             <div>
-              <h2 className="font-display text-2xl font-800 tracking-tight">
-                Who owes whom
-              </h2>
-              <p className="mt-1 text-sm text-ink-soft">Clear the slate — punch PAID when done.</p>
+              <h2 className="font-display text-2xl font-800 tracking-tight">Settle</h2>
+              <p className="mt-1 text-sm text-ink-soft">Who owes whom — mark paid when cash moves.</p>
             </div>
             <div className="perforation" aria-hidden />
             {!members.length ? (
@@ -269,60 +267,61 @@ export function GroupWorkspace({ slug }: { slug: string }) {
                 body="Add people on the Crew tab before balances make sense."
               />
             ) : (
-              <ul>
-                {balances.map((b) => (
-                  <li key={b.memberId} className="stub-row cursor-default">
-                    <span className="font-800">{b.name}</span>
-                    <span
-                      className={
-                        b.netCents > 1
-                          ? "font-800 text-[var(--mark)]"
-                          : b.netCents < -1
-                            ? "font-800 text-[var(--accent-deep)]"
-                            : "font-650 text-ink-soft"
-                      }
-                    >
-                      {b.netCents > 1
-                        ? `gets ${formatMoney(b.netCents, currency)}`
-                        : b.netCents < -1
-                          ? `owes ${formatMoney(-b.netCents, currency)}`
-                          : "settled"}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            <div className="pt-2">
-              <h3 className="font-display text-xl font-800">Settle up</h3>
-              {!transfers.length ? (
-                <EmptyStage title="All square — nice." body="No transfers pending on this stub." />
-              ) : (
-                <ul className="mt-1">
-                  {transfers.map((t) => (
-                    <li
-                      key={`${t.fromId}-${t.toId}-${t.amountCents}`}
-                      className="stub-row cursor-default"
-                    >
-                      <p className="text-sm">
-                        <strong>{t.fromName}</strong> → <strong>{t.toName}</strong>
-                        <span className="mt-0.5 block font-800">
-                          {formatMoney(t.amountCents, currency)}
-                        </span>
-                      </p>
-                      <button
-                        type="button"
-                        className="btn btn-ink px-3 py-2 text-xs"
-                        disabled={busy}
-                        onClick={() => onSettle(t)}
+              <>
+                <ul>
+                  {balances.map((b) => (
+                    <li key={b.memberId} className="stub-row cursor-default">
+                      <span className="font-800">{b.name}</span>
+                      <span
+                        className={
+                          b.netCents > 1
+                            ? "font-800 text-[var(--mark)]"
+                            : b.netCents < -1
+                              ? "font-800 text-[var(--accent-deep)]"
+                              : "font-650 text-ink-soft"
+                        }
                       >
-                        Mark paid
-                      </button>
+                        {b.netCents > 1
+                          ? `gets ${formatMoney(b.netCents, currency)}`
+                          : b.netCents < -1
+                            ? `owes ${formatMoney(-b.netCents, currency)}`
+                            : "settled"}
+                      </span>
                     </li>
                   ))}
                 </ul>
-              )}
-            </div>
+                {transfers.length ? (
+                  <div className="pt-2">
+                    <p className="label">To clear it</p>
+                    <ul>
+                      {transfers.map((t) => (
+                        <li
+                          key={`${t.fromId}-${t.toId}-${t.amountCents}`}
+                          className="stub-row cursor-default"
+                        >
+                          <p className="text-sm">
+                            <strong>{t.fromName}</strong> → <strong>{t.toName}</strong>
+                            <span className="mt-0.5 block font-800">
+                              {formatMoney(t.amountCents, currency)}
+                            </span>
+                          </p>
+                          <button
+                            type="button"
+                            className="btn btn-ink px-3 py-2 text-xs"
+                            disabled={busy}
+                            onClick={() => onSettle(t)}
+                          >
+                            Mark paid
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <p className="pt-1 text-sm font-650 text-ink-soft">All square — nice.</p>
+                )}
+              </>
+            )}
           </section>
         )}
 
@@ -330,13 +329,13 @@ export function GroupWorkspace({ slug }: { slug: string }) {
           <section aria-label="Ledger" className="space-y-4">
             <div>
               <h2 className="font-display text-2xl font-800 tracking-tight">Ledger</h2>
-              <p className="mt-1 text-sm text-ink-soft">Tap a line to edit or delete.</p>
+              <p className="mt-1 text-sm text-ink-soft">Tap a line to edit.</p>
             </div>
             <div className="perforation" aria-hidden />
             {!expenses.length ? (
               <EmptyStage
                 title="Blank ledger"
-                body="Stamp the first spend with the + button."
+                body="Stamp the first spend."
                 action={
                   <button
                     type="button"
@@ -384,9 +383,7 @@ export function GroupWorkspace({ slug }: { slug: string }) {
           <section aria-label="Crew" className="space-y-4">
             <div>
               <h2 className="font-display text-2xl font-800 tracking-tight">Crew</h2>
-              <p className="mt-1 text-sm text-ink-soft">
-                Names on the stub — separate from Mini Apps login.
-              </p>
+              <p className="mt-1 text-sm text-ink-soft">Names on this stub.</p>
             </div>
             <div className="perforation" aria-hidden />
             {!members.length ? (
@@ -400,12 +397,13 @@ export function GroupWorkspace({ slug }: { slug: string }) {
                 ))}
               </ul>
             )}
-            <form onSubmit={onAddPerson} className="flex gap-2 pt-2">
+            <form onSubmit={onAddPerson} className="flex gap-2 border-t border-dashed border-[var(--line)] pt-4">
               <input
                 className="input"
                 placeholder="Add person"
                 value={newPerson}
                 onChange={(e) => setNewPerson(e.target.value)}
+                aria-label="Add person"
               />
               <button type="submit" className="btn btn-ink shrink-0" disabled={busy}>
                 Add
@@ -415,17 +413,19 @@ export function GroupWorkspace({ slug }: { slug: string }) {
         )}
       </main>
 
-      <button
-        type="button"
-        className="stamp-fab"
-        aria-label="Stamp expense"
-        onClick={() => {
-          setEditing(null);
-          setSheetOpen(true);
-        }}
-      >
-        +
-      </button>
+      {tab === "ledger" && (
+        <button
+          type="button"
+          className="stamp-fab"
+          aria-label="Stamp expense"
+          onClick={() => {
+            setEditing(null);
+            setSheetOpen(true);
+          }}
+        >
+          +
+        </button>
+      )}
 
       <BottomNav tab={tab} onChange={setTab} />
 
