@@ -9,7 +9,7 @@ import {
   getGroupBySlug,
   recordSettlement,
 } from "@/lib/splitter";
-import { formatMoney } from "@/lib/money";
+import { formatMoney, toCents } from "@/lib/money";
 import type {
   ExpenseWithShares,
   Group,
@@ -78,23 +78,40 @@ export function GroupWorkspace({ slug }: { slug: string }) {
     setBusy(true);
     setError(null);
     try {
-      await addExpense({
+      const saved = await addExpense({
         groupId: group.id,
         description: desc,
         amount: Number(amount),
         paidBy,
         splitAmong: splitIds,
       });
+      const cents = toCents(Number(amount));
+      const n = splitIds.length;
+      const base = Math.floor(cents / n);
+      let remainder = cents - base * n;
+      const optimistic: ExpenseWithShares = {
+        ...saved,
+        payer_name: members.find((m) => m.id === paidBy)?.name,
+        shares: splitIds.map((memberId) => {
+          const extra = remainder > 0 ? 1 : 0;
+          if (remainder > 0) remainder -= 1;
+          return { expense_id: saved.id, member_id: memberId, share_cents: base + extra };
+        }),
+      };
+      setExpenses((prev) => [optimistic, ...prev.filter((x) => x.id !== saved.id)]);
       setDesc("");
       setAmount("");
       setSheetOpen(false);
       setTab("spends");
-      // Ensure PostgREST sees the just-written rows before we re-read.
-      await new Promise((r) => setTimeout(r, 150));
-      await reload();
+      setBusy(false);
+      // Refresh from server after paint; don't block the sheet close path.
+      queueMicrotask(() => {
+        void reload().catch((err) => {
+          setError(err instanceof Error ? err.message : "Could not refresh");
+        });
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not add expense");
-    } finally {
       setBusy(false);
     }
   }
