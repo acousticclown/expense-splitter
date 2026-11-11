@@ -28,7 +28,7 @@
     0 10px 24px rgba(17, 17, 17, 0.1);
   --shadow-press: 0 2px 8px rgba(17, 17, 17, 0.16);
   --radius-card: 1.6rem;
-  --radius-btn: 1.15rem;
+  --radius-btn: 0.95rem;
   --nav-h: 5rem;
   --safe-b: env(safe-area-inset-bottom, 0px);
   --background: var(--paper);
