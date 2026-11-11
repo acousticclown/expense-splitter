@@ -23,6 +23,7 @@ import type {
 import { BottomNav, type TabId } from "@/components/ui/BottomNav";
 import { Sheet } from "@/components/ui/Sheet";
 import { Loader } from "@/components/ui/Loader";
+import { EmptyStage } from "@/components/ui/EmptyStage";
 import { ExpenseForm } from "@/components/ExpenseForm";
 
 export function GroupWorkspace({ slug }: { slug: string }) {
@@ -32,7 +33,7 @@ export function GroupWorkspace({ slug }: { slug: string }) {
   const [settlements, setSettlements] = useState<Settlement[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<TabId>("balances");
+  const [tab, setTab] = useState<TabId>("settle");
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState<ExpenseWithShares | null>(null);
   const [copied, setCopied] = useState(false);
@@ -81,7 +82,7 @@ export function GroupWorkspace({ slug }: { slug: string }) {
       await saveExpense(draft, expenseId);
       setSheetOpen(false);
       setEditing(null);
-      setTab("spends");
+      setTab("ledger");
       await reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save expense");
@@ -147,10 +148,15 @@ export function GroupWorkspace({ slug }: { slug: string }) {
   if (authed === false) {
     return (
       <main className="shell space-y-4 py-16">
-        <p className="text-ink-soft">Sign in to open this group.</p>
-        <Link href={`/login?next=/g/${slug}`} className="btn btn-primary inline-flex">
-          Sign in
-        </Link>
+        <EmptyStage
+          title="Stub locked"
+          body="Sign in with your Mini Apps account to open this group."
+          action={
+            <Link href={`/login?next=/g/${slug}`} className="btn btn-primary inline-flex">
+              Sign in
+            </Link>
+          }
+        />
       </main>
     );
   }
@@ -158,7 +164,7 @@ export function GroupWorkspace({ slug }: { slug: string }) {
   if (loading || authed === null) {
     return (
       <main className="shell flex min-h-[40vh] items-center justify-center py-16">
-        <Loader label="Loading group…" />
+        <Loader label="Finding the stub…" />
       </main>
     );
   }
@@ -168,7 +174,7 @@ export function GroupWorkspace({ slug }: { slug: string }) {
       <main className="shell space-y-4 py-16">
         <p className="text-[var(--bad)]">{error || "Not found"}</p>
         <Link href="/" className="btn btn-ghost inline-flex">
-          ← Groups
+          ← Stubs
         </Link>
       </main>
     );
@@ -185,15 +191,14 @@ export function GroupWorkspace({ slug }: { slug: string }) {
               href="/"
               className="mb-2 inline-flex items-center gap-1 text-sm font-700 text-ink-soft hover:text-ink"
             >
-              ← Groups
+              ← Stubs
             </Link>
-            <p className="text-[0.7rem] font-800 uppercase tracking-[0.14em] text-ink-soft">
-              Expense Splitter
+            <p className="text-[0.7rem] font-800 uppercase tracking-[0.16em] text-ink-soft">
+              Expense Splitter · {currency}
             </p>
             <h1 className="font-display mt-1 truncate text-3xl font-800 tracking-tight text-ink sm:text-5xl">
               {group.name}
             </h1>
-            <p className="mt-1 text-xs font-650 text-ink-soft">{currency}</p>
           </div>
           <button
             type="button"
@@ -221,9 +226,9 @@ export function GroupWorkspace({ slug }: { slug: string }) {
         <div className="hidden gap-2 md:flex" role="tablist" aria-label="Group sections">
           {(
             [
-              ["balances", "Balances"],
-              ["spends", "Spends"],
-              ["people", "People"],
+              ["settle", "Settle"],
+              ["ledger", "Ledger"],
+              ["crew", "Crew"],
             ] as const
           ).map(([id, label]) => (
             <button
@@ -245,34 +250,35 @@ export function GroupWorkspace({ slug }: { slug: string }) {
               setSheetOpen(true);
             }}
           >
-            Add expense
+            Stamp expense
           </button>
         </div>
 
-        {tab === "balances" && (
-          <section aria-label="Balances" className="space-y-5">
+        {tab === "settle" && (
+          <section aria-label="Settle" className="space-y-5">
             <div>
-              <h2 className="font-display text-2xl font-700 tracking-tight">
+              <h2 className="font-display text-2xl font-800 tracking-tight">
                 Who owes whom
               </h2>
-              <p className="mt-1 text-sm text-ink-soft">Clear the slate.</p>
+              <p className="mt-1 text-sm text-ink-soft">Clear the slate — punch PAID when done.</p>
             </div>
+            <div className="perforation" aria-hidden />
             {!members.length ? (
-              <p className="text-sm text-ink-soft">Add people to see balances.</p>
+              <EmptyStage
+                title="Crew missing"
+                body="Add people on the Crew tab before balances make sense."
+              />
             ) : (
-              <ul className="space-y-3">
+              <ul>
                 {balances.map((b) => (
-                  <li
-                    key={b.memberId}
-                    className="flex items-center justify-between gap-3 border-b border-[var(--line)] pb-3"
-                  >
-                    <span className="font-700">{b.name}</span>
+                  <li key={b.memberId} className="stub-row cursor-default">
+                    <span className="font-800">{b.name}</span>
                     <span
                       className={
                         b.netCents > 1
-                          ? "font-800 text-[var(--good)]"
+                          ? "font-800 text-[var(--mark)]"
                           : b.netCents < -1
-                            ? "font-800 text-[var(--bad)]"
+                            ? "font-800 text-[var(--accent-deep)]"
                             : "font-650 text-ink-soft"
                       }
                     >
@@ -288,20 +294,21 @@ export function GroupWorkspace({ slug }: { slug: string }) {
             )}
 
             <div className="pt-2">
-              <h3 className="font-display text-xl font-700">Settle up</h3>
+              <h3 className="font-display text-xl font-800">Settle up</h3>
               {!transfers.length ? (
-                <p className="mt-3 text-sm text-ink-soft">All square — nice.</p>
+                <EmptyStage title="All square — nice." body="No transfers pending on this stub." />
               ) : (
-                <ul className="mt-3 space-y-3">
+                <ul className="mt-1">
                   {transfers.map((t) => (
                     <li
                       key={`${t.fromId}-${t.toId}-${t.amountCents}`}
-                      className="flex flex-wrap items-center justify-between gap-2"
+                      className="stub-row cursor-default"
                     >
                       <p className="text-sm">
-                        <strong>{t.fromName}</strong> pays{" "}
-                        <strong>{t.toName}</strong>{" "}
-                        {formatMoney(t.amountCents, currency)}
+                        <strong>{t.fromName}</strong> → <strong>{t.toName}</strong>
+                        <span className="mt-0.5 block font-800">
+                          {formatMoney(t.amountCents, currency)}
+                        </span>
                       </p>
                       <button
                         type="button"
@@ -319,69 +326,80 @@ export function GroupWorkspace({ slug }: { slug: string }) {
           </section>
         )}
 
-        {tab === "spends" && (
-          <section aria-label="Spends" className="space-y-4">
-            <div className="flex items-end justify-between gap-3">
-              <div>
-                <h2 className="font-display text-2xl font-700 tracking-tight">
-                  Spends
-                </h2>
-                <p className="mt-1 text-sm text-ink-soft">Tap a spend to edit.</p>
-              </div>
+        {tab === "ledger" && (
+          <section aria-label="Ledger" className="space-y-4">
+            <div>
+              <h2 className="font-display text-2xl font-800 tracking-tight">Ledger</h2>
+              <p className="mt-1 text-sm text-ink-soft">Tap a line to edit or delete.</p>
             </div>
-            <ul>
-              {expenses.map((e) => (
-                <li key={e.id}>
+            <div className="perforation" aria-hidden />
+            {!expenses.length ? (
+              <EmptyStage
+                title="Blank ledger"
+                body="Stamp the first spend with the + button."
+                action={
                   <button
                     type="button"
-                    className="flex w-full items-start justify-between gap-3 border-b border-[var(--line)] py-3.5 text-left"
+                    className="btn btn-primary"
                     onClick={() => {
-                      setEditing(e);
+                      setEditing(null);
                       setSheetOpen(true);
                     }}
                   >
-                    <div className="min-w-0">
-                      <p className="truncate font-700">{e.description}</p>
-                      <p className="text-sm text-ink-soft">
-                        {describePayers(e)} ·{" "}
-                        {new Date(e.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <p className="shrink-0 font-800">
-                      {formatMoney(e.amount_cents, currency)}
-                    </p>
+                    Stamp expense
                   </button>
-                </li>
-              ))}
-              {!expenses.length && (
-                <li className="py-10 text-sm text-ink-soft">
-                  No spends yet. Tap + to add one.
-                </li>
-              )}
-            </ul>
+                }
+              />
+            ) : (
+              <ul>
+                {expenses.map((e) => (
+                  <li key={e.id}>
+                    <button
+                      type="button"
+                      className="stub-row"
+                      onClick={() => {
+                        setEditing(e);
+                        setSheetOpen(true);
+                      }}
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate font-800">{e.description}</p>
+                        <p className="text-sm text-ink-soft">
+                          {describePayers(e)} ·{" "}
+                          {new Date(e.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <p className="shrink-0 font-800">
+                        {formatMoney(e.amount_cents, currency)}
+                      </p>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </section>
         )}
 
-        {tab === "people" && (
-          <section aria-label="People" className="space-y-4">
+        {tab === "crew" && (
+          <section aria-label="Crew" className="space-y-4">
             <div>
-              <h2 className="font-display text-2xl font-700 tracking-tight">
-                People
-              </h2>
+              <h2 className="font-display text-2xl font-800 tracking-tight">Crew</h2>
               <p className="mt-1 text-sm text-ink-soft">
-                Names used for splitting (not the same as app login).
+                Names on the stub — separate from Mini Apps login.
               </p>
             </div>
-            <ul className="space-y-2">
-              {members.map((m) => (
-                <li key={m.id} className="border-b border-[var(--line)] py-3 font-700">
-                  {m.name}
-                </li>
-              ))}
-              {!members.length && (
-                <li className="py-6 text-sm text-ink-soft">No people yet.</li>
-              )}
-            </ul>
+            <div className="perforation" aria-hidden />
+            {!members.length ? (
+              <EmptyStage title="Nobody here yet" body="Add the first name below." />
+            ) : (
+              <ul>
+                {members.map((m) => (
+                  <li key={m.id} className="stub-row cursor-default font-800">
+                    {m.name}
+                  </li>
+                ))}
+              </ul>
+            )}
             <form onSubmit={onAddPerson} className="flex gap-2 pt-2">
               <input
                 className="input"
@@ -399,8 +417,8 @@ export function GroupWorkspace({ slug }: { slug: string }) {
 
       <button
         type="button"
-        className="fixed bottom-[calc(var(--nav-h)+var(--safe-b)+0.85rem)] right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--accent)] text-2xl font-800 text-[var(--accent-ink)] shadow-[0_12px_28px_rgba(155,196,31,0.4)] md:hidden"
-        aria-label="Add expense"
+        className="stamp-fab"
+        aria-label="Stamp expense"
         onClick={() => {
           setEditing(null);
           setSheetOpen(true);
@@ -413,7 +431,7 @@ export function GroupWorkspace({ slug }: { slug: string }) {
 
       <Sheet
         open={sheetOpen}
-        title={editing ? "Edit expense" : "Add expense"}
+        title={editing ? "Edit stamp" : "Stamp expense"}
         onClose={() => {
           setSheetOpen(false);
           setEditing(null);

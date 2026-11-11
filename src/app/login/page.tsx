@@ -11,7 +11,10 @@ export default async function LoginPage({
 
   return (
     <main className="shell flex min-h-[100dvh] flex-col justify-center py-10">
-      <p className="font-display anim-rise mb-6 text-4xl font-800 tracking-tight">
+      <p className="text-[0.72rem] font-800 uppercase tracking-[0.18em] text-ink-soft">
+        Shared Mini Apps login
+      </p>
+      <p className="font-display anim-rise mt-2 mb-6 text-4xl font-800 tracking-tight">
         Expense Splitter
       </p>
       {params.error && (

@@ -1,39 +1,40 @@
 "use client";
 
-export type TabId = "balances" | "spends" | "people";
+export type TabId = "settle" | "ledger" | "crew";
 
 const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
   {
-    id: "balances",
-    label: "Balances",
+    id: "settle",
+    label: "Settle",
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
         <path
-          d="M3 15.5h14M5 12V8.5M10 12V5.5M15 12V7"
+          d="M3.5 10h13M10 3.5v13"
           stroke="currentColor"
-          strokeWidth="1.7"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+        <circle cx="10" cy="10" r="6.25" stroke="currentColor" strokeWidth="1.8" />
+      </svg>
+    ),
+  },
+  {
+    id: "ledger",
+    label: "Ledger",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
+        <path
+          d="M4 5.5h12M4 10h12M4 14.5h8"
+          stroke="currentColor"
+          strokeWidth="1.8"
           strokeLinecap="round"
         />
       </svg>
     ),
   },
   {
-    id: "spends",
-    label: "Spends",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
-        <path
-          d="M4 6.5h12v9H4v-9Zm2.5-3h7L15 6.5H5l1.5-3Z"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-  },
-  {
-    id: "people",
-    label: "People",
+    id: "crew",
+    label: "Crew",
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
         <circle cx="7" cy="7.5" r="2.4" stroke="currentColor" strokeWidth="1.7" />
@@ -57,26 +58,21 @@ export function BottomNav({
   onChange: (tab: TabId) => void;
 }) {
   return (
-    <nav
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--line)] bg-[rgba(242,246,239,0.96)] px-3 pt-2 backdrop-blur-xl supports-[backdrop-filter]:bg-[rgba(242,246,239,0.88)] md:hidden"
-      style={{ paddingBottom: "calc(0.55rem + env(safe-area-inset-bottom, 0px))" }}
-      aria-label="Group sections"
-    >
-      <ul className="mx-auto grid max-w-md grid-cols-3 gap-1">
+    <nav className="dock md:hidden" aria-label="Group sections">
+      <ul className="dock-list">
         {TABS.map((t) => {
           const active = t.id === tab;
           return (
             <li key={t.id}>
               <button
                 type="button"
-                className={`flex w-full flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[0.7rem] font-800 tracking-wide transition-colors ${
-                  active ? "bg-ink text-[var(--accent)]" : "text-ink-soft"
-                }`}
+                className="dock-btn"
                 aria-current={active ? "page" : undefined}
                 onClick={() => onChange(t.id)}
               >
                 {t.icon}
                 {t.label}
+                <span className="dock-blot" aria-hidden />
               </button>
             </li>
           );

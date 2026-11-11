@@ -59,10 +59,10 @@ export function CreateGroupForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="surface anim-rise-delay space-y-5 p-5 sm:p-6">
+    <form onSubmit={onSubmit} className="space-y-5">
       <div>
         <label className="label" htmlFor="name">
-          Group name
+          Stub title
         </label>
         <input
           id="name"
@@ -76,7 +76,7 @@ export function CreateGroupForm() {
       </div>
 
       <div>
-        <p className="label">People</p>
+        <p className="label">Crew</p>
         <div className="mb-3 flex flex-wrap gap-2">
           {people.map((p) => (
             <button
@@ -125,7 +125,7 @@ export function CreateGroupForm() {
         className="btn btn-primary w-full"
         disabled={pending || !canSubmit}
       >
-        {pending ? "Creating…" : "Create group"}
+        {pending ? "Stamping…" : "Tear off stub"}
       </button>
     </form>
   );

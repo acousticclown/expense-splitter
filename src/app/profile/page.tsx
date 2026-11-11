@@ -44,7 +44,7 @@ export default function ProfilePage() {
   return (
     <main className="shell max-w-lg space-y-6 py-10">
       <Link href="/" className="text-sm font-700 text-ink-soft hover:text-ink">
-        ← Groups
+        ← Stubs
       </Link>
       <h1 className="font-display text-3xl font-800 tracking-tight">Profile</h1>
       <p className="text-sm text-ink-soft">

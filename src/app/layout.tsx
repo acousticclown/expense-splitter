@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Figtree, Syne } from "next/font/google";
+import { Bricolage_Grotesque, Figtree } from "next/font/google";
 import "./globals.css";
 
 const figtree = Figtree({
@@ -8,8 +8,8 @@ const figtree = Figtree({
   display: "swap",
 });
 
-const syne = Syne({
-  variable: "--font-syne",
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
   subsets: ["latin"],
   display: "swap",
 });
@@ -20,21 +20,21 @@ export const metadata: Metadata = {
     template: "%s · Expense Splitter",
   },
   description:
-    "Lite Splitwise — split expenses, track balances, and settle up with friends.",
+    "Stub Ledger — tear off a group, stamp spends, settle the crew.",
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#f2f6ef",
+  themeColor: "#e4ede7",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${figtree.variable} ${syne.variable} h-full antialiased`}
+      className={`${figtree.variable} ${bricolage.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
