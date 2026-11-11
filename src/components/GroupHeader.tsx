@@ -10,17 +10,17 @@ type Props = {
 
 export function GroupHeader({ name, currency }: Props) {
   const [copied, setCopied] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const menuId = useId();
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLElement>(null);
+  const panelId = useId();
 
   useEffect(() => {
-    if (!menuOpen) return;
+    if (!open) return;
     function onDoc(e: MouseEvent) {
-      if (!menuRef.current?.contains(e.target as Node)) setMenuOpen(false);
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
     }
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setMenuOpen(false);
+      if (e.key === "Escape") setOpen(false);
     }
     document.addEventListener("mousedown", onDoc);
     document.addEventListener("keydown", onKey);
@@ -28,7 +28,7 @@ export function GroupHeader({ name, currency }: Props) {
       document.removeEventListener("mousedown", onDoc);
       document.removeEventListener("keydown", onKey);
     };
-  }, [menuOpen]);
+  }, [open]);
 
   async function copyLink() {
     try {
@@ -41,86 +41,117 @@ export function GroupHeader({ name, currency }: Props) {
   }
 
   return (
-    <header className="group-header">
-      <Link href="/" className="group-header-side group-header-back" aria-label="Back to stubs">
-        <span aria-hidden>←</span>
-      </Link>
+    <header
+      ref={rootRef}
+      className={`group-header${open ? " is-open" : ""}`}
+    >
+      <div className="group-header-bar">
+        <Link
+          href="/"
+          className="group-header-side group-header-back"
+          aria-label="Back to stubs"
+        >
+          <span aria-hidden>←</span>
+        </Link>
 
-      <div className="group-header-center" ref={menuRef}>
-        <h1 className="group-header-title" title={name}>
-          {name}
-        </h1>
+        <div className="group-header-center">
+          <button
+            type="button"
+            className="group-header-title-btn"
+            aria-expanded={open}
+            aria-controls={panelId}
+            onClick={() => setOpen((v) => !v)}
+          >
+            <h1 className="group-header-title" title={name}>
+              {name}
+            </h1>
+            <span
+              className={`group-header-chevron${open ? " is-open" : ""}`}
+              aria-hidden
+            >
+              <svg viewBox="0 0 20 20" width="16" height="16">
+                <path
+                  d="M5 7.5 10 12.5 15 7.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+          </button>
+        </div>
+
         <button
           type="button"
-          className="group-header-more"
-          aria-haspopup="menu"
-          aria-expanded={menuOpen}
-          aria-controls={menuId}
-          aria-label="Stub menu"
-          onClick={() => setMenuOpen((v) => !v)}
+          className="group-header-side group-header-copy"
+          aria-label={copied ? "Link copied" : "Copy share link"}
+          title={copied ? "Copied" : "Copy share link"}
+          onClick={copyLink}
         >
-          <span aria-hidden>···</span>
+          {copied ? (
+            <span className="group-header-copy-done" aria-hidden>
+              ✓
+            </span>
+          ) : (
+            <CopyIcon />
+          )}
         </button>
-        {menuOpen && (
-          <div id={menuId} role="menu" className="group-header-popover anim-stamp">
-            <div className="group-header-popover-meta" role="presentation">
-              <p className="font-800 tracking-tight truncate">{name}</p>
-              <p className="text-xs text-ink-soft">Currency · {currency}</p>
-            </div>
+      </div>
+
+      {open && (
+        <div id={panelId} className="group-header-panel anim-stamp" role="region" aria-label="Stub details">
+          <div className="group-header-panel-body">
+            <p className="group-header-panel-name">{name}</p>
+            <p className="group-header-panel-meta">Currency · {currency}</p>
             <button
               type="button"
-              role="menuitem"
-              className="account-popover-item"
+              className="btn-boxy-split group-header-panel-cta"
               onClick={async () => {
-                setMenuOpen(false);
                 await copyLink();
               }}
             >
-              Copy share link
+              <span className="btn-boxy-split-label">
+                {copied ? "Link copied" : "Copy share link"}
+              </span>
+              <span className="btn-boxy-split-arrow" aria-hidden>
+                →
+              </span>
             </button>
           </div>
-        )}
-      </div>
-
-      <button
-        type="button"
-        className="group-header-side group-header-copy"
-        aria-label={copied ? "Link copied" : "Copy share link"}
-        title={copied ? "Copied" : "Copy share link"}
-        onClick={copyLink}
-      >
-        {copied ? (
-          <span className="group-header-copy-done" aria-hidden>
-            ✓
-          </span>
-        ) : (
-          <svg
-            className="group-header-copy-icon"
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            aria-hidden
-          >
-            <rect
-              x="9"
-              y="9"
-              width="11"
-              height="11"
-              rx="2.2"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            />
-            <path
-              d="M7 15H6a2.2 2.2 0 0 1-2.2-2.2V6A2.2 2.2 0 0 1 6 3.8h6.8A2.2 2.2 0 0 1 15 6v1"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-        )}
-      </button>
+        </div>
+      )}
     </header>
+  );
+}
+
+function CopyIcon() {
+  return (
+    <svg
+      className="group-header-copy-icon"
+      viewBox="0 0 24 24"
+      width="20"
+      height="20"
+      aria-hidden
+    >
+      <rect
+        x="9"
+        y="9"
+        width="11"
+        height="11"
+        rx="2.2"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+      <path
+        d="M7 15H6a2.2 2.2 0 0 1-2.2-2.2V6A2.2 2.2 0 0 1 6 3.8h6.8A2.2 2.2 0 0 1 15 6v1"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
