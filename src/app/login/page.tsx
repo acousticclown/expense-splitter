@@ -4,7 +4,7 @@ import { AuthForm } from "@/components/AuthForm";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; error?: string }>;
 }) {
   const params = await searchParams;
   const next = params.next || "/";
@@ -14,11 +14,17 @@ export default async function LoginPage({
       <p className="font-display anim-rise mb-6 text-4xl font-800 tracking-tight">
         Expense Splitter
       </p>
+      {params.error && (
+        <p className="anim-rise mb-4 max-w-md text-sm font-semibold text-[var(--bad)]">
+          Sign-in link failed: {params.error}. Request a new magic link or use
+          password.
+        </p>
+      )}
       <div className="anim-rise-delay max-w-md">
         <AuthForm next={next} />
       </div>
       <p className="mt-8 text-sm text-ink-soft">
-        <Link href="/" className="font-650 underline underline-offset-4">
+        <Link href="/" className="text-link">
           ← Back home
         </Link>
       </p>
