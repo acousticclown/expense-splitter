@@ -383,27 +383,52 @@ export function GroupWorkspace({ slug }: { slug: string }) {
           <section aria-label="Crew" className="space-y-4">
             <div>
               <h2 className="font-display text-2xl font-800 tracking-tight">Crew</h2>
-              <p className="mt-1 text-sm text-ink-soft">Names on this stub.</p>
+              <p className="mt-1 text-sm text-ink-soft">
+                Name or email — emails stay pending until they join.
+              </p>
             </div>
             <div className="perforation" aria-hidden />
             {!members.length ? (
-              <EmptyStage title="Nobody here yet" body="Add the first name below." />
+              <EmptyStage title="Nobody here yet" body="Add the first name or email below." />
             ) : (
               <ul>
                 {members.map((m) => (
-                  <li key={m.id} className="stub-row cursor-default font-800">
-                    {m.name}
+                  <li key={m.id} className="stub-row cursor-default">
+                    <span className="min-w-0">
+                      <span className="block font-800">{m.name}</span>
+                      {m.email ? (
+                        <span className="text-xs text-ink-soft">{m.email}</span>
+                      ) : null}
+                    </span>
+                    <span
+                      className={`text-xs font-800 uppercase tracking-wide ${
+                        m.status === "pending"
+                          ? "text-[var(--accent-deep)]"
+                          : m.status === "claimed"
+                            ? "text-[var(--mark)]"
+                            : "text-ink-soft"
+                      }`}
+                    >
+                      {m.status === "pending"
+                        ? "Pending"
+                        : m.status === "claimed"
+                          ? "Joined"
+                          : "Named"}
+                    </span>
                   </li>
                 ))}
               </ul>
             )}
-            <form onSubmit={onAddPerson} className="flex gap-2 border-t border-dashed border-[var(--line)] pt-4">
+            <form
+              onSubmit={onAddPerson}
+              className="flex gap-2 border-t border-dashed border-[var(--line)] pt-4"
+            >
               <input
                 className="input"
-                placeholder="Add person"
+                placeholder="Name or email"
                 value={newPerson}
                 onChange={(e) => setNewPerson(e.target.value)}
-                aria-label="Add person"
+                aria-label="Add person by name or email"
               />
               <button type="submit" className="btn btn-ink shrink-0" disabled={busy}>
                 Add

@@ -7,10 +7,15 @@ export type Group = {
   owner_id?: string | null;
 };
 
+export type MemberStatus = "named" | "pending" | "claimed";
+
 export type Member = {
   id: string;
   group_id: string;
   name: string;
+  email?: string | null;
+  status?: MemberStatus;
+  profile_id?: string | null;
   created_at: string;
 };
 

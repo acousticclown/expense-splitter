@@ -1,5 +1,6 @@
 import { customAlphabet } from "nanoid";
 import { createClient } from "@/lib/supabase/client";
+import { parseCrewInput } from "@/lib/crew";
 import { settleBalances, splitEqualCents, sumRecord, toCents } from "@/lib/money";
 import type {
   ExpensePayment,
@@ -57,10 +58,16 @@ export async function listMyGroups(): Promise<Group[]> {
   });
 }
 
+export type CreateMemberInput = {
+  name: string;
+  email?: string;
+  isSelf?: boolean;
+};
+
 export async function createGroup(input: {
   name: string;
   currency?: string;
-  members: string[];
+  members: CreateMemberInput[];
 }) {
   const sb = createClient();
   const {
@@ -88,14 +95,53 @@ export async function createGroup(input: {
   });
   if (aErr) throw aErr;
 
-  const names = input.members.map((n) => n.trim()).filter(Boolean);
-  if (!names.length) throw new Error("Add at least one person");
+  type MemberInsert = {
+    group_id: string;
+    name: string;
+    email?: string;
+    status: "named" | "pending" | "claimed";
+    profile_id?: string;
+  };
+
+  const rows: MemberInsert[] = [];
+  for (const m of input.members) {
+    const name = m.name.trim();
+    const email = m.email?.trim().toLowerCase() || undefined;
+    if (!name && !email) continue;
+    if (m.isSelf) {
+      rows.push({
+        group_id: group.id,
+        name: name || "You",
+        email: email || user.email?.toLowerCase() || undefined,
+        status: "claimed",
+        profile_id: user.id,
+      });
+      continue;
+    }
+    if (email) {
+      rows.push({
+        group_id: group.id,
+        name: name || email.split("@")[0],
+        email,
+        status: "pending",
+      });
+      continue;
+    }
+    rows.push({
+      group_id: group.id,
+      name,
+      status: "named",
+    });
+  }
+  if (!rows.length) throw new Error("Add at least one person");
 
   const { data: members, error: mErr } = await sb
     .from("split_members")
-    .insert(names.map((name) => ({ group_id: group.id, name })))
+    .insert(rows)
     .select("*");
   if (mErr) throw mErr;
+
+  await sb.rpc("claim_split_invites");
 
   return { group: group as Group, members: (members || []) as Member[] };
 }
@@ -183,11 +229,39 @@ export async function getGroupBySlug(slug: string) {
   };
 }
 
-export async function addMember(groupId: string, name: string) {
+export async function addMember(
+  groupId: string,
+  input: string | CreateMemberInput,
+) {
   const sb = createClient();
+  const parsed =
+    typeof input === "string"
+      ? (() => {
+          const p = parseCrewInput(input);
+          if (!p) throw new Error("Add a name or email");
+          return { name: p.name, email: p.email, isSelf: false as boolean };
+        })()
+      : input;
+
+  const email = parsed.email?.trim().toLowerCase() || undefined;
+  const name = parsed.name.trim() || (email ? email.split("@")[0] : "");
+  if (!name) throw new Error("Add a name or email");
+
+  const row: {
+    group_id: string;
+    name: string;
+    email?: string;
+    status: "named" | "pending";
+  } = {
+    group_id: groupId,
+    name,
+    status: email ? "pending" : "named",
+  };
+  if (email) row.email = email;
+
   const { data, error } = await sb
     .from("split_members")
-    .insert({ group_id: groupId, name: name.trim() })
+    .insert(row)
     .select("*")
     .single();
   if (error) throw error;

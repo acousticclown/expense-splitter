@@ -351,6 +351,116 @@ body > * {
   text-decoration-color: var(--accent);
 }
 
+.crew-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.crew-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.crew-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  padding: 0.42rem 0.7rem 0.42rem 0.8rem;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.crew-chip.is-self {
+  background: rgba(14, 28, 22, 0.92);
+}
+
+.crew-chip.is-pending {
+  background: #fff;
+  color: var(--ink);
+  border-style: dashed;
+}
+
+.crew-chip-name {
+  max-width: 8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crew-chip-meta {
+  display: none;
+}
+
+@media (min-width: 420px) {
+  .crew-chip-meta {
+    display: inline;
+    max-width: 9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.72rem;
+    font-weight: 650;
+    opacity: 0.7;
+  }
+}
+
+.crew-chip-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+
+.crew-chip-x {
+  opacity: 0.7;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.crew-add {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.crew-helper {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+
+.currency-field,
+.stub-form .mau-select {
+  position: relative;
+  z-index: 2;
+}
+
+/* Select menu must clear the StampSheet stacking context */
+.mau-select-content {
+  z-index: 120 !important;
+}
+
+.mau-sheet-content {
+  z-index: 80;
+}
+
+.mau-sheet-overlay {
+  z-index: 70;
+}
+
 .stub-row {
   display: flex;
   align-items: center;

@@ -41,25 +41,35 @@ export async function ensureProfile(user: User): Promise<AppProfile> {
     };
   }
 
+  let profile: AppProfile;
   if (existing) {
-    return existing as AppProfile;
+    profile = existing as AppProfile;
+  } else {
+    const row = {
+      id: user.id,
+      email: user.email || "",
+      phone,
+      display_name: display,
+    };
+    const { data, error } = await sb
+      .from("app_profiles")
+      .upsert(row, { onConflict: "id" })
+      .select("*")
+      .single();
+    profile = (data as AppProfile) || row;
+    if (error && !data) {
+      return row;
+    }
   }
 
-  const row = {
-    id: user.id,
-    email: user.email || "",
-    phone,
-    display_name: display,
-  };
-  const { data, error } = await sb
-    .from("app_profiles")
-    .upsert(row, { onConflict: "id" })
-    .select("*")
-    .single();
-  if (error || !data) {
-    return row;
+  // Auto-claim pending stub memberships for this email (shared userbase).
+  try {
+    await sb.rpc("claim_split_invites");
+  } catch {
+    /* non-blocking */
   }
-  return data as AppProfile;
+
+  return profile;
 }
 
 export async function updateProfile(patch: {
