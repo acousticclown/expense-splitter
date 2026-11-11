@@ -25,6 +25,7 @@ import { Sheet } from "@/components/ui/Sheet";
 import { Loader } from "@/components/ui/Loader";
 import { EmptyStage } from "@/components/ui/EmptyStage";
 import { ExpenseForm } from "@/components/ExpenseForm";
+import { GroupHeader } from "@/components/GroupHeader";
 
 export function GroupWorkspace({ slug }: { slug: string }) {
   const [group, setGroup] = useState<Group | null>(null);
@@ -36,7 +37,6 @@ export function GroupWorkspace({ slug }: { slug: string }) {
   const [tab, setTab] = useState<TabId>("settle");
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState<ExpenseWithShares | null>(null);
-  const [copied, setCopied] = useState(false);
   const [newPerson, setNewPerson] = useState("");
   const [busy, setBusy] = useState(false);
   const [authed, setAuthed] = useState<boolean | null>(null);
@@ -190,35 +190,7 @@ export function GroupWorkspace({ slug }: { slug: string }) {
   return (
     <>
       <main className="shell page-pad anim-rise space-y-5 pt-5 sm:space-y-7 sm:pt-10">
-        <header className="min-w-0">
-          <Link
-            href="/"
-            className="mb-2 inline-flex items-center gap-1 text-sm font-700 text-ink-soft hover:text-ink"
-          >
-            ← Stubs
-          </Link>
-          <p className="text-[0.7rem] font-800 uppercase tracking-[0.16em] text-ink-soft">
-            {currency}
-          </p>
-          <h1 className="font-display mt-1 truncate text-3xl font-800 tracking-tight text-ink sm:text-4xl">
-            {group.name}
-          </h1>
-          <button
-            type="button"
-            className="mt-2 text-sm font-700 text-ink-soft underline decoration-[var(--line)] underline-offset-4 hover:text-ink"
-            onClick={async () => {
-              try {
-                await navigator.clipboard?.writeText(window.location.href);
-                setCopied(true);
-                window.setTimeout(() => setCopied(false), 1600);
-              } catch {
-                /* ignore */
-              }
-            }}
-          >
-            {copied ? "Link copied" : "Copy share link"}
-          </button>
-        </header>
+        <GroupHeader name={group.name} currency={currency} />
 
         {error && (
           <p className="rounded-2xl bg-red-50 px-3 py-2 text-sm font-semibold text-[var(--bad)]">

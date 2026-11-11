@@ -348,6 +348,125 @@ body > * {
   z-index: 60;
 }
 
+/* One-row stub chrome: back | name + ··· | copy */
+.group-header {
+  display: grid;
+  grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.85rem;
+}
+
+.group-header-side {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: var(--radius-btn);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-lift);
+  text-decoration: none;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  font-size: 1.15rem;
+  line-height: 1;
+  transition:
+    transform var(--motion-stamp),
+    box-shadow var(--motion-stamp);
+}
+
+.group-header-side:active {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-press);
+}
+
+.group-header-back {
+  color: var(--ink);
+}
+
+.group-header-center {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  min-width: 0;
+  padding: 0 0.15rem;
+}
+
+.group-header-title {
+  margin: 0;
+  max-width: min(100%, 14rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-bricolage), "Bricolage Grotesque", sans-serif;
+  font-size: clamp(1.15rem, 4.2vw, 1.45rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-align: center;
+}
+
+.group-header-more {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0.85rem;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.group-header-more:hover,
+.group-header-more[aria-expanded="true"] {
+  color: var(--ink);
+  background: rgba(17, 17, 17, 0.05);
+}
+
+.group-header-popover {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  left: 50%;
+  z-index: 70;
+  min-width: 12.5rem;
+  max-width: min(18rem, 86vw);
+  transform: translateX(-50%);
+  border: 0;
+  border-radius: 1.25rem;
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+  padding: 0.45rem;
+}
+
+.group-header-popover-meta {
+  padding: 0.7rem 0.8rem 0.55rem;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 0.25rem;
+}
+
+.group-header-copy-icon {
+  display: block;
+}
+
+.group-header-copy-done {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
 .account-menu {
   position: relative;
   z-index: 61;
