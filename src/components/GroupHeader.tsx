@@ -126,7 +126,7 @@ export function GroupHeader({ name, currency }: Props) {
           {open && (
             <div
               id={panelId}
-              className="group-header-panel anim-stamp"
+              className="group-header-panel"
               role="region"
               aria-label="Stub details"
             >
