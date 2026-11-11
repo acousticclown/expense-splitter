@@ -192,7 +192,18 @@ export function ExpenseForm({
           <button
             type="button"
             className="text-xs font-700 text-ink-soft underline-offset-2 hover:underline"
-            onClick={() => setUnequalPay((v) => !v)}
+            onClick={() => {
+              setUnequalPay((v) => {
+                const next = !v;
+                if (next && totalCents && payerIds.length) {
+                  const eq = splitEqualCents(totalCents, payerIds);
+                  const seeded: Record<string, string> = {};
+                  for (const id of payerIds) seeded[id] = centsToInput(eq[id] || 0);
+                  setPayAmounts(seeded);
+                }
+                return next;
+              });
+            }}
           >
             {unequalPay ? "Equal payments" : "Unequal payments"}
           </button>
