@@ -194,70 +194,26 @@ export async function addMember(groupId: string, name: string) {
   return data as Member;
 }
 
-async function writeExpenseParts(
-  sb: ReturnType<typeof createClient>,
-  expenseId: string,
-  draft: ExpenseDraft,
-) {
-  await sb.from("split_expense_payments").delete().eq("expense_id", expenseId);
-  await sb.from("split_expense_shares").delete().eq("expense_id", expenseId);
-
-  const payRows = Object.entries(draft.payments)
-    .filter(([, cents]) => cents > 0)
-    .map(([member_id, paid_cents]) => ({
-      expense_id: expenseId,
-      member_id,
-      paid_cents,
-    }));
-  const shareRows = Object.entries(draft.shares)
-    .filter(([, cents]) => cents > 0)
-    .map(([member_id, share_cents]) => ({
-      expense_id: expenseId,
-      member_id,
-      share_cents,
-    }));
-
-  const { error: pErr } = await sb.from("split_expense_payments").insert(payRows);
-  if (pErr) throw pErr;
-  const { error: sErr } = await sb.from("split_expense_shares").insert(shareRows);
-  if (sErr) throw sErr;
-}
-
 export async function saveExpense(draft: ExpenseDraft, expenseId?: string) {
   assertBalanced(draft);
   const sb = createClient();
-  const primaryPayer =
-    Object.entries(draft.payments).find(([, c]) => c > 0)?.[0] || null;
+  const payments = Object.entries(draft.payments)
+    .filter(([, cents]) => cents > 0)
+    .map(([member_id, paid_cents]) => ({ member_id, paid_cents }));
+  const shares = Object.entries(draft.shares)
+    .filter(([, cents]) => cents > 0)
+    .map(([member_id, share_cents]) => ({ member_id, share_cents }));
 
-  if (expenseId) {
-    const { data, error } = await sb
-      .from("split_expenses")
-      .update({
-        description: draft.description.trim(),
-        amount_cents: draft.amountCents,
-        paid_by: primaryPayer,
-      })
-      .eq("id", expenseId)
-      .select("*")
-      .single();
-    if (error) throw error;
-    await writeExpenseParts(sb, expenseId, draft);
-    return data;
-  }
-
-  const { data: expense, error } = await sb
-    .from("split_expenses")
-    .insert({
-      group_id: draft.groupId,
-      description: draft.description.trim(),
-      amount_cents: draft.amountCents,
-      paid_by: primaryPayer,
-    })
-    .select("*")
-    .single();
+  const { data, error } = await sb.rpc("save_split_expense", {
+    p_group_id: draft.groupId,
+    p_description: draft.description.trim(),
+    p_amount_cents: draft.amountCents,
+    p_payments: payments,
+    p_shares: shares,
+    p_expense_id: expenseId || null,
+  });
   if (error) throw error;
-  await writeExpenseParts(sb, expense.id, draft);
-  return expense;
+  return data;
 }
 
 export async function addExpense(input: {
