@@ -29,7 +29,7 @@ export function Sheet({ open, title, onClose, children }: Props) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center">
+    <div className="fixed inset-0 z-50">
       <button
         type="button"
         className="anim-fade absolute inset-0 bg-[rgba(16,20,15,0.45)]"
@@ -40,9 +40,10 @@ export function Sheet({ open, title, onClose, children }: Props) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="anim-sheet surface relative z-10 w-full max-w-lg rounded-t-[1.75rem] border-b-0 p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] shadow-[0_-12px_40px_rgba(16,20,15,0.18)] md:rounded-[1.75rem] md:border md:p-6"
+        className="anim-sheet surface absolute inset-x-0 bottom-0 z-10 mx-auto flex max-h-[min(92dvh,40rem)] w-full max-w-lg flex-col rounded-t-[1.75rem] border-b-0 p-5 shadow-[0_-12px_40px_rgba(16,20,15,0.18)] md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:rounded-[1.75rem] md:border md:p-6"
+        style={{ paddingBottom: "calc(1.25rem + env(safe-area-inset-bottom, 0px))" }}
       >
-        <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="mb-4 flex shrink-0 items-start justify-between gap-3">
           <h2 id={titleId} className="font-display text-2xl font-700 tracking-tight">
             {title}
           </h2>
@@ -50,7 +51,7 @@ export function Sheet({ open, title, onClose, children }: Props) {
             Close
           </button>
         </div>
-        {children}
+        <div className="min-h-0 overflow-y-auto overscroll-contain">{children}</div>
       </div>
     </div>
   );
