@@ -22,7 +22,8 @@ export function GroupHeader({ name, currency }: Props) {
 
   useEffect(() => {
     if (!open) return;
-    const prev = document.body.style.overflow;
+    const prevOverflow = document.body.style.overflow;
+    document.body.classList.add("group-header-overlay-open");
     document.body.style.overflow = "hidden";
 
     function onKey(e: KeyboardEvent) {
@@ -30,7 +31,8 @@ export function GroupHeader({ name, currency }: Props) {
     }
     document.addEventListener("keydown", onKey);
     return () => {
-      document.body.style.overflow = prev;
+      document.body.classList.remove("group-header-overlay-open");
+      document.body.style.overflow = prevOverflow;
       document.removeEventListener("keydown", onKey);
     };
   }, [open]);

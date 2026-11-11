@@ -348,7 +348,7 @@ body > * {
   z-index: 60;
 }
 
-/* Stub chrome: solid overlay panel + frosted page scrim (no layout shift) */
+/* Stub chrome: solid overlay panel; real page freezes/frosts underneath */
 .group-header {
   position: relative;
   z-index: 55;
@@ -356,21 +356,37 @@ body > * {
 }
 
 .group-header.is-open {
-  z-index: 80;
+  z-index: 90;
 }
 
-/* Portaled to document.body — freezes/obscures the page behind the panel */
+/*
+  Frost the actual page (Settle/Ledger/Crew/dock), not a solid fill.
+  `backdrop-filter` on a paper-tinted scrim read as a flat blue plate —
+  blur the live content instead; scrim stays a light frost veil + click catcher.
+*/
+body.group-header-overlay-open main.shell > :not(.group-header) {
+  filter: blur(12px) saturate(1.05);
+  pointer-events: none;
+  user-select: none;
+}
+
+body.group-header-overlay-open .dock,
+body.group-header-overlay-open .stamp-fab {
+  filter: blur(12px) saturate(1.05);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Portaled click veil — keep tint low so blurred page stays visible */
 .group-header-scrim {
   position: fixed;
   inset: 0;
-  z-index: 70;
+  z-index: 85;
   margin: 0;
   padding: 0;
   border: 0;
   cursor: pointer;
-  background: rgba(243, 244, 247, 0.55);
-  backdrop-filter: blur(22px) saturate(1.2);
-  -webkit-backdrop-filter: blur(22px) saturate(1.2);
+  background: rgba(255, 255, 255, 0.22);
 }
 
 .group-header-sheet {
@@ -385,7 +401,7 @@ body > * {
   left: 0;
   right: 0;
   top: 0;
-  z-index: 81;
+  z-index: 91;
   background: #ffffff;
   border: 1px solid rgba(17, 17, 17, 0.06);
   box-shadow:
