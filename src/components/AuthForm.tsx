@@ -169,23 +169,39 @@ export function AuthForm({ next = "/" }: { next?: string }) {
               : "Sign in"}
       </button>
 
-      <div className="flex flex-col gap-2 text-center text-sm font-650 text-ink-soft">
+      <div className="flex flex-col items-center gap-1.5 pt-1">
         {mode !== "magic" && (
-          <button type="button" onClick={() => setMode("magic")}>
+          <button
+            type="button"
+            className="text-link"
+            onClick={() => setMode("magic")}
+          >
             Use magic link instead
           </button>
         )}
         {mode !== "password" && (
-          <button type="button" onClick={() => setMode("password")}>
+          <button
+            type="button"
+            className="text-link"
+            onClick={() => setMode("password")}
+          >
             Use password instead
           </button>
         )}
         {mode !== "signup" ? (
-          <button type="button" onClick={() => setMode("signup")}>
+          <button
+            type="button"
+            className="text-link"
+            onClick={() => setMode("signup")}
+          >
             Create an account
           </button>
         ) : (
-          <button type="button" onClick={() => setMode("magic")}>
+          <button
+            type="button"
+            className="text-link"
+            onClick={() => setMode("magic")}
+          >
             Already have an account? Sign in
           </button>
         )}

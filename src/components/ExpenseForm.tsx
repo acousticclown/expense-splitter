@@ -191,7 +191,7 @@ export function ExpenseForm({
           <p className="label mb-0">Paid by</p>
           <button
             type="button"
-            className="text-xs font-700 text-ink-soft underline-offset-2 hover:underline"
+            className="text-link text-xs"
             onClick={() => {
               setUnequalPay((v) => {
                 const next = !v;
@@ -252,7 +252,7 @@ export function ExpenseForm({
           <p className="label mb-0">Split among</p>
           <button
             type="button"
-            className="text-xs font-700 text-ink-soft underline-offset-2 hover:underline"
+            className="text-link text-xs"
             onClick={() => setUnequalSplit((v) => !v)}
           >
             {unequalSplit ? "Equal split" : "Unequal split"}
