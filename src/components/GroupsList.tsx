@@ -9,6 +9,7 @@ import {
 } from "react";
 import { listMyGroups } from "@/lib/splitter";
 import type { Group } from "@/lib/types";
+import { formatStubDates } from "@/lib/stubKind";
 import {
   rememberStubOpen,
   stubThemeFor,
@@ -133,12 +134,16 @@ export function GroupsList({ onCreate, refreshKey = 0 }: Props) {
                 </span>
                 <span className="stub-cover-body">
                   <span className="stub-cover-meta">
-                    <span className="stub-chip">{g.currency}</span>
+                    <span className="stub-chip">
+                      {(g.stub_kind || "group") === "event" ? "Event" : "Group"}
+                    </span>
+                    <span className="stub-chip stub-chip-soft">{g.currency}</span>
                     <span className="stub-chip stub-chip-soft">
-                      {new Date(g.created_at).toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                      })}
+                      {formatStubDates(g) ||
+                        new Date(g.created_at).toLocaleDateString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                        })}
                     </span>
                   </span>
                   <span className="stub-cover-title">{g.name}</span>

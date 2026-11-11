@@ -566,6 +566,97 @@ body.group-header-overlay-open .stamp-fab {
   font-weight: 800;
 }
 
+.stub-kind-grid {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.stub-kind-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  width: 100%;
+  padding: 1.15rem 1.2rem;
+  border: 1px solid rgba(17, 17, 17, 0.06);
+  border-radius: var(--radius-card);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: var(--ink);
+  box-shadow: var(--shadow-lift);
+  transition:
+    transform var(--motion-stamp),
+    box-shadow var(--motion-stamp);
+}
+
+.stub-kind-card.theme-event {
+  background: linear-gradient(155deg, #ffffff 35%, var(--pastel-lilac));
+}
+
+.stub-kind-card.theme-group {
+  background: linear-gradient(155deg, #ffffff 35%, var(--pastel-mint));
+}
+
+.stub-kind-card:active {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-press);
+}
+
+.stub-kind-label {
+  font-family: var(--font-bricolage), "Bricolage Grotesque", sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.stub-kind-copy {
+  font-size: 0.9rem;
+  font-weight: 650;
+  color: var(--ink-soft);
+}
+
+.event-dates {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.event-date-mode {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem;
+}
+
+.event-date-mode-btn {
+  min-height: 2.7rem;
+  border: 1.5px solid rgba(17, 17, 17, 0.1);
+  border-radius: var(--radius-btn);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.event-date-mode-btn.is-on {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+
+.event-date-fields {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 480px) {
+  .event-date-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .account-menu {
   position: relative;
   z-index: 61;

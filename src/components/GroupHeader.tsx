@@ -7,9 +7,16 @@ import { createPortal } from "react-dom";
 type Props = {
   name: string;
   currency: string;
+  stubKind?: "event" | "group";
+  dateLabel?: string | null;
 };
 
-export function GroupHeader({ name, currency }: Props) {
+export function GroupHeader({
+  name,
+  currency,
+  stubKind = "group",
+  dateLabel,
+}: Props) {
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -132,7 +139,10 @@ export function GroupHeader({ name, currency }: Props) {
             >
               <div className="group-header-panel-body">
                 <p className="group-header-panel-name">{name}</p>
-                <p className="group-header-panel-meta">Currency · {currency}</p>
+                <p className="group-header-panel-meta">
+                  {stubKind === "event" ? "Event" : "Group"} · {currency}
+                  {dateLabel ? ` · ${dateLabel}` : ""}
+                </p>
                 <button
                   type="button"
                   className="btn-boxy-split group-header-panel-cta"

@@ -144,7 +144,7 @@ export function HomeClient() {
         title="New stub"
         onClose={() => setCreateOpen(false)}
       >
-        <CreateGroupForm />
+        <CreateGroupForm onCancel={() => setCreateOpen(false)} />
       </Sheet>
     </>
   );

@@ -33,6 +33,7 @@ import { EmptyStage } from "@/components/ui/EmptyStage";
 import { ExpenseForm } from "@/components/ExpenseForm";
 import { GroupHeader } from "@/components/GroupHeader";
 import { takeStubOpen, type StubOpenPayload } from "@/lib/stubTheme";
+import { formatStubDates } from "@/lib/stubKind";
 
 export function GroupWorkspace({ slug }: { slug: string }) {
   const [group, setGroup] = useState<Group | null>(null);
@@ -216,7 +217,12 @@ export function GroupWorkspace({ slug }: { slug: string }) {
             : undefined
         }
       >
-        <GroupHeader name={group.name} currency={currency} />
+        <GroupHeader
+          name={group.name}
+          currency={currency}
+          stubKind={group.stub_kind || "group"}
+          dateLabel={formatStubDates(group)}
+        />
 
         {error && (
           <p className="rounded-2xl bg-red-50 px-3 py-2 text-sm font-semibold text-[var(--bad)]">

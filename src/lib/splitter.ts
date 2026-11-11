@@ -3,13 +3,16 @@ import { createClient } from "@/lib/supabase/client";
 import { parseCrewInput } from "@/lib/crew";
 import { settleBalances, splitEqualCents, sumRecord, toCents } from "@/lib/money";
 import type {
+  EventDateMode,
   ExpensePayment,
   ExpenseShare,
   ExpenseWithShares,
   Group,
   Member,
   Settlement,
+  StubKind,
 } from "@/lib/types";
+import { normalizeEventDates } from "@/lib/stubKind";
 
 const slugId = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 8);
 
@@ -68,12 +71,39 @@ export async function createGroup(input: {
   name: string;
   currency?: string;
   members: CreateMemberInput[];
+  stubKind?: StubKind;
+  eventDateMode?: EventDateMode;
+  startsOn?: string;
+  endsOn?: string;
 }) {
   const sb = createClient();
   const {
     data: { user },
   } = await sb.auth.getUser();
   if (!user) throw new Error("Sign in to create a group");
+
+  const stubKind: StubKind = input.stubKind === "event" ? "event" : "group";
+  let eventFields: {
+    event_date_mode: EventDateMode | null;
+    starts_on: string | null;
+    ends_on: string | null;
+  } = {
+    event_date_mode: null,
+    starts_on: null,
+    ends_on: null,
+  };
+  if (stubKind === "event") {
+    const normalized = normalizeEventDates({
+      mode: input.eventDateMode === "range" ? "range" : "single",
+      startsOn: input.startsOn || "",
+      endsOn: input.endsOn,
+    });
+    eventFields = {
+      event_date_mode: normalized.mode,
+      starts_on: normalized.startsOn,
+      ends_on: normalized.endsOn,
+    };
+  }
 
   const slug = slugId();
   const { data: group, error } = await sb
@@ -83,6 +113,8 @@ export async function createGroup(input: {
       slug,
       currency: input.currency || "INR",
       owner_id: user.id,
+      stub_kind: stubKind,
+      ...eventFields,
     })
     .select("*")
     .single();
