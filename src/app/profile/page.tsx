@@ -8,6 +8,7 @@ import {
   updateProfile,
   type AppProfile,
 } from "@/lib/auth";
+import { Loader } from "@/components/ui/Loader";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<AppProfile | null>(null);
@@ -33,7 +34,11 @@ export default function ProfilePage() {
   }, []);
 
   if (loading) {
-    return <p className="shell py-16 text-ink-soft">Loading profile…</p>;
+    return (
+      <main className="shell flex min-h-[50dvh] items-center justify-center py-16">
+        <Loader label="Loading profile…" />
+      </main>
+    );
   }
 
   return (

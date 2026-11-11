@@ -22,6 +22,7 @@ import type {
 } from "@/lib/types";
 import { BottomNav, type TabId } from "@/components/ui/BottomNav";
 import { Sheet } from "@/components/ui/Sheet";
+import { Loader } from "@/components/ui/Loader";
 import { ExpenseForm } from "@/components/ExpenseForm";
 
 export function GroupWorkspace({ slug }: { slug: string }) {
@@ -156,9 +157,9 @@ export function GroupWorkspace({ slug }: { slug: string }) {
 
   if (loading || authed === null) {
     return (
-      <p className="shell py-16 text-ink-soft" aria-busy>
-        Loading group…
-      </p>
+      <main className="shell flex min-h-[40vh] items-center justify-center py-16">
+        <Loader label="Loading group…" />
+      </main>
     );
   }
 

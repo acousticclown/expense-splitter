@@ -11,6 +11,7 @@ import {
   type AppProfile,
 } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/client";
+import { Loader } from "@/components/ui/Loader";
 import type { User } from "@supabase/supabase-js";
 
 export function HomeClient() {
@@ -81,7 +82,11 @@ export function HomeClient() {
   }, []);
 
   if (loading) {
-    return <p className="shell py-16 text-ink-soft">Loading…</p>;
+    return (
+      <main className="shell flex min-h-[40vh] items-center justify-center py-16">
+        <Loader />
+      </main>
+    );
   }
 
   if (!user) {

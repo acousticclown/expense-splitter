@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { TextLink } from "@shivansh/mini-app-ui";
 import { createClient } from "@/lib/supabase/client";
 import { ensureProfile } from "@/lib/auth";
 
@@ -171,39 +172,23 @@ export function AuthForm({ next = "/" }: { next?: string }) {
 
       <div className="flex flex-col items-center gap-1.5 pt-1">
         {mode !== "magic" && (
-          <button
-            type="button"
-            className="text-link"
-            onClick={() => setMode("magic")}
-          >
+          <TextLink type="button" onClick={() => setMode("magic")}>
             Use magic link instead
-          </button>
+          </TextLink>
         )}
         {mode !== "password" && (
-          <button
-            type="button"
-            className="text-link"
-            onClick={() => setMode("password")}
-          >
+          <TextLink type="button" onClick={() => setMode("password")}>
             Use password instead
-          </button>
+          </TextLink>
         )}
         {mode !== "signup" ? (
-          <button
-            type="button"
-            className="text-link"
-            onClick={() => setMode("signup")}
-          >
+          <TextLink type="button" onClick={() => setMode("signup")}>
             Create an account
-          </button>
+          </TextLink>
         ) : (
-          <button
-            type="button"
-            className="text-link"
-            onClick={() => setMode("magic")}
-          >
+          <TextLink type="button" onClick={() => setMode("magic")}>
             Already have an account? Sign in
-          </button>
+          </TextLink>
         )}
       </div>
     </form>

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@shivansh/mini-app-ui/styles.css";
 
 :root {
   --ink: #10140f;
@@ -16,6 +17,20 @@
   --safe-b: env(safe-area-inset-bottom, 0px);
   --background: var(--paper);
   --foreground: var(--ink);
+
+  /* Bridge host tokens into the shared UI kit */
+  --mau-ink: var(--ink);
+  --mau-ink-soft: var(--ink-soft);
+  --mau-mist: var(--mist);
+  --mau-paper: var(--paper);
+  --mau-surface: var(--surface);
+  --mau-accent: var(--accent);
+  --mau-accent-ink: var(--accent-ink);
+  --mau-accent-deep: var(--accent-deep);
+  --mau-line: var(--line);
+  --mau-good: var(--good);
+  --mau-bad: var(--bad);
+  --mau-font: var(--font-figtree), "Figtree", sans-serif;
 }
 
 @theme inline {
@@ -314,3 +329,5 @@ body > * {
   white-space: nowrap;
   border: 0;
 }
+
+

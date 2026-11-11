@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { listMyGroups } from "@/lib/splitter";
 import type { Group } from "@/lib/types";
+import { Loader } from "@/components/ui/Loader";
 
 export function GroupsList() {
   const [groups, setGroups] = useState<Group[]>([]);
@@ -18,7 +19,7 @@ export function GroupsList() {
   }, []);
 
   if (loading) {
-    return <p className="text-sm text-ink-soft">Loading your groups…</p>;
+    return <Loader label="Loading your groups…" />;
   }
 
   if (error) {
