@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+} from "react";
 import {
   addMember,
   computeBalances,
@@ -26,6 +32,7 @@ import { Loader } from "@/components/ui/Loader";
 import { EmptyStage } from "@/components/ui/EmptyStage";
 import { ExpenseForm } from "@/components/ExpenseForm";
 import { GroupHeader } from "@/components/GroupHeader";
+import { takeStubOpen, type StubOpenPayload } from "@/lib/stubTheme";
 
 export function GroupWorkspace({ slug }: { slug: string }) {
   const [group, setGroup] = useState<Group | null>(null);
@@ -40,6 +47,16 @@ export function GroupWorkspace({ slug }: { slug: string }) {
   const [newPerson, setNewPerson] = useState("");
   const [busy, setBusy] = useState(false);
   const [authed, setAuthed] = useState<boolean | null>(null);
+  const [arrive, setArrive] = useState<StubOpenPayload | null>(null);
+
+  useEffect(() => {
+    const payload = takeStubOpen();
+    if (payload && payload.slug === slug) {
+      setArrive(payload);
+      const t = window.setTimeout(() => setArrive(null), 1400);
+      return () => window.clearTimeout(t);
+    }
+  }, [slug]);
 
   const reload = useCallback(async () => {
     const data = await getGroupBySlug(slug);
@@ -189,7 +206,16 @@ export function GroupWorkspace({ slug }: { slug: string }) {
 
   return (
     <>
-      <main className="shell page-pad anim-rise space-y-5 pt-5 sm:space-y-7 sm:pt-10">
+      <main
+        className={`shell page-pad space-y-5 pt-5 sm:space-y-7 sm:pt-10 ${
+          arrive ? `stub-arrive theme-${arrive.theme}` : "anim-rise"
+        }`}
+        style={
+          arrive
+            ? ({ viewTransitionName: "stub-cover" } as CSSProperties)
+            : undefined
+        }
+      >
         <GroupHeader name={group.name} currency={currency} />
 
         {error && (
