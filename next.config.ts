@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  transpilePackages: ["@shivansh/mini-app-ui"],
   experimental: {
     staleTimes: { dynamic: 30, static: 180 },
   },

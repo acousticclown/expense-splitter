@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { TextLink } from "@shivansh/mini-app-ui";
+import { BoxyButton } from "@/components/BoxyButton";
 import { createClient } from "@/lib/supabase/client";
 import { ensureProfile } from "@/lib/auth";
 
@@ -27,12 +29,16 @@ export function AuthForm({ next = "/" }: { next?: string }) {
         const { error: err } = await supabase.auth.signInWithOtp({
           email,
           options: {
+            // Server route exchanges PKCE using the cookie set by this client.
             emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+            shouldCreateUser: true,
             data: { phone, display_name: displayName || undefined },
           },
         });
         if (err) throw err;
-        setMessage("Check your email for the magic link.");
+        setMessage(
+          "Check your email for the magic link. Open it in this same browser.",
+        );
       } else if (mode === "signup") {
         if (password.length < 8) throw new Error("Password must be at least 8 characters");
         if (!phone.trim()) throw new Error("Add a phone number to your profile");
@@ -77,7 +83,7 @@ export function AuthForm({ next = "/" }: { next?: string }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="surface space-y-4 p-5 sm:p-6">
+    <form onSubmit={onSubmit} className="surface space-y-4 p-5 sm:p-6 soft-card">
       <div>
         <p className="font-display text-2xl font-700 tracking-tight">
           {mode === "signup" ? "Create account" : "Sign in"}
@@ -159,7 +165,7 @@ export function AuthForm({ next = "/" }: { next?: string }) {
       {error && <p className="text-sm font-semibold text-[var(--bad)]">{error}</p>}
       {message && <p className="text-sm font-650 text-[var(--good)]">{message}</p>}
 
-      <button type="submit" className="btn btn-primary w-full" disabled={pending}>
+      <BoxyButton type="submit" disabled={pending}>
         {pending
           ? "Working…"
           : mode === "magic"
@@ -167,43 +173,27 @@ export function AuthForm({ next = "/" }: { next?: string }) {
             : mode === "signup"
               ? "Sign up"
               : "Sign in"}
-      </button>
+      </BoxyButton>
 
       <div className="flex flex-col items-center gap-1.5 pt-1">
         {mode !== "magic" && (
-          <button
-            type="button"
-            className="text-link"
-            onClick={() => setMode("magic")}
-          >
+          <TextLink type="button" onClick={() => setMode("magic")}>
             Use magic link instead
-          </button>
+          </TextLink>
         )}
         {mode !== "password" && (
-          <button
-            type="button"
-            className="text-link"
-            onClick={() => setMode("password")}
-          >
+          <TextLink type="button" onClick={() => setMode("password")}>
             Use password instead
-          </button>
+          </TextLink>
         )}
         {mode !== "signup" ? (
-          <button
-            type="button"
-            className="text-link"
-            onClick={() => setMode("signup")}
-          >
+          <TextLink type="button" onClick={() => setMode("signup")}>
             Create an account
-          </button>
+          </TextLink>
         ) : (
-          <button
-            type="button"
-            className="text-link"
-            onClick={() => setMode("magic")}
-          >
+          <TextLink type="button" onClick={() => setMode("magic")}>
             Already have an account? Sign in
-          </button>
+          </TextLink>
         )}
       </div>
     </form>

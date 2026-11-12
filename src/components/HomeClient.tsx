@@ -2,15 +2,18 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { AccountMenu } from "@/components/AccountMenu";
+import { AppCredit } from "@/components/AppCredit";
 import { CreateGroupForm } from "@/components/CreateGroupForm";
 import { GroupsList } from "@/components/GroupsList";
 import {
   ensureProfile,
   getSessionUser,
-  signOut,
   type AppProfile,
 } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/client";
+import { Loader } from "@/components/ui/Loader";
+import { Sheet } from "@/components/ui/Sheet";
 import type { User } from "@supabase/supabase-js";
 
 export function HomeClient() {
@@ -18,6 +21,7 @@ export function HomeClient() {
   const [profile, setProfile] = useState<AppProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [bootError, setBootError] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -26,26 +30,19 @@ export function HomeClient() {
       try {
         const sb = createClient();
 
-        // Implicit/legacy magic links may land with tokens in the URL hash.
         if (typeof window !== "undefined" && window.location.hash.includes("access_token")) {
           await sb.auth.getSession();
-          // Clean hash without reload.
           window.history.replaceState({}, "", window.location.pathname + window.location.search);
         }
 
-        // If PKCE code somehow lands on `/` instead of /auth/callback, finish it.
         const params = new URLSearchParams(window.location.search);
         const code = params.get("code");
         if (code) {
-          const { error } = await sb.auth.exchangeCodeForSession(code);
-          if (error) throw error;
-          params.delete("code");
-          const qs = params.toString();
-          window.history.replaceState(
-            {},
-            "",
-            window.location.pathname + (qs ? `?${qs}` : ""),
+          // Always exchange on the server so the PKCE verifier cookie is used.
+          window.location.replace(
+            `/auth/callback?code=${encodeURIComponent(code)}&next=${encodeURIComponent("/")}`,
           );
+          return;
         }
 
         const u = await getSessionUser();
@@ -81,81 +78,74 @@ export function HomeClient() {
   }, []);
 
   if (loading) {
-    return <p className="shell py-16 text-ink-soft">Loading…</p>;
+    return (
+      <main className="shell flex min-h-[40vh] items-center justify-center py-16">
+        <Loader />
+      </main>
+    );
   }
 
   if (!user) {
     return (
       <main className="shell flex min-h-[100dvh] flex-col justify-center py-10 sm:py-16">
-        <div className="anim-rise max-w-xl">
-          <p className="font-display text-[clamp(2.75rem,12vw,4.75rem)] font-800 leading-[0.92] tracking-tight text-ink">
+        <div className="welcome-card anim-rise">
+          <p className="text-[0.72rem] font-800 uppercase tracking-[0.14em] text-ink-soft">
+            Stub Ledger
+          </p>
+          <p className="font-display mt-3 text-[clamp(2.6rem,11vw,4.2rem)] font-800 leading-[0.92] tracking-tight text-ink">
             Expense
             <br />
             Splitter
           </p>
-          <p className="mt-5 max-w-md text-base leading-relaxed text-ink-soft sm:text-lg">
-            Split spends, see who owes whom, settle up. Sign in to keep your
-            groups across devices — shared with Shivansh&apos;s Mini Apps.
+          <p className="mt-4 max-w-sm text-base leading-relaxed text-ink-soft">
+            Split spends. Settle the crew.
           </p>
           {bootError && (
             <p className="mt-4 text-sm font-semibold text-[var(--bad)]">{bootError}</p>
           )}
-          <Link href="/login" className="btn btn-primary mt-8 inline-flex">
-            Sign in / Sign up
+          <Link href="/login" className="mt-7 block no-underline">
+            <span className="btn-boxy-split pointer-events-none">
+              <span className="btn-boxy-split-label">Sign in / Sign up</span>
+              <span className="btn-boxy-split-arrow" aria-hidden>
+                →
+              </span>
+            </span>
           </Link>
         </div>
+        <AppCredit />
       </main>
     );
   }
 
   return (
-    <main className="shell page-pad space-y-10 py-10 sm:py-14">
-      <header className="anim-rise flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="font-display text-[clamp(2.4rem,10vw,3.75rem)] font-800 leading-[0.92] tracking-tight">
-            Expense Splitter
-          </p>
-          <p className="mt-3 text-sm text-ink-soft">
-            Hi {profile?.display_name || user.email} ·{" "}
-            {profile?.phone || "add phone in profile"}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Link href="/profile" className="btn btn-ghost text-sm">
-            Profile
-          </Link>
-          <button
-            type="button"
-            className="btn btn-ink text-sm"
-            onClick={async () => {
-              await signOut();
-              window.location.href = "/";
-            }}
-          >
-            Sign out
-          </button>
-        </div>
-      </header>
+    <>
+      <main className="shell page-pad space-y-8 py-8 sm:py-12">
+        <header className="home-topbar anim-rise flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-[0.68rem] font-800 uppercase tracking-[0.16em] text-ink-soft">
+              Stub Ledger
+            </p>
+            <p className="font-display truncate text-xl font-800 tracking-tight sm:text-2xl">
+              Expense Splitter
+            </p>
+          </div>
+          <AccountMenu profile={profile} email={user.email || ""} />
+        </header>
 
-      <div className="anim-rise-delay surface p-5 sm:p-6">
-        <GroupsList />
-      </div>
+        <div className="anim-rise-delay relative z-0">
+          <GroupsList onCreate={() => setCreateOpen(true)} />
+        </div>
 
-      <section className="max-w-lg">
-        <h2 className="font-display mb-4 text-xl font-700 tracking-tight">
-          Create a group
-        </h2>
+        <AppCredit />
+      </main>
+
+      <Sheet
+        open={createOpen}
+        title="New stub"
+        onClose={() => setCreateOpen(false)}
+      >
         <CreateGroupForm />
-      </section>
-
-      <p className="text-sm text-ink-soft">
-        <Link
-          href="https://shivanshs-mini-apps.vercel.app"
-          className="font-semibold text-ink underline decoration-[var(--accent-deep)] underline-offset-4"
-        >
-          ← Shivansh&apos;s Mini Apps
-        </Link>
-      </p>
-    </main>
+      </Sheet>
+    </>
   );
 }

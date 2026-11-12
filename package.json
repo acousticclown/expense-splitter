@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@shivansh/mini-app-ui": "github:acousticclown/mini-app-ui",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.119.0",
     "nanoid": "^6.0.2",

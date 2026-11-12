@@ -8,6 +8,10 @@ export async function createClient() {
   }
   const cookieStore = await cookies();
   return createServerClient(getSupabaseUrl(), getSupabaseAnonKey(), {
+    cookieOptions: {
+      path: "/",
+      sameSite: "lax",
+    },
     cookies: {
       getAll() {
         return cookieStore.getAll();

@@ -8,6 +8,7 @@ import {
   updateProfile,
   type AppProfile,
 } from "@/lib/auth";
+import { Loader } from "@/components/ui/Loader";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<AppProfile | null>(null);
@@ -33,13 +34,17 @@ export default function ProfilePage() {
   }, []);
 
   if (loading) {
-    return <p className="shell py-16 text-ink-soft">Loading profile…</p>;
+    return (
+      <main className="shell flex min-h-[50dvh] items-center justify-center py-16">
+        <Loader label="Loading profile…" />
+      </main>
+    );
   }
 
   return (
     <main className="shell max-w-lg space-y-6 py-10">
       <Link href="/" className="text-sm font-700 text-ink-soft hover:text-ink">
-        ← Groups
+        ← Stubs
       </Link>
       <h1 className="font-display text-3xl font-800 tracking-tight">Profile</h1>
       <p className="text-sm text-ink-soft">
@@ -97,8 +102,13 @@ export default function ProfilePage() {
         </div>
         {error && <p className="text-sm font-semibold text-[var(--bad)]">{error}</p>}
         {message && <p className="text-sm font-650 text-[var(--good)]">{message}</p>}
-        <button type="submit" className="btn btn-primary w-full" disabled={pending}>
-          {pending ? "Saving…" : "Save profile"}
+        <button type="submit" className="btn-boxy-split" disabled={pending}>
+          <span className="btn-boxy-split-label">
+            {pending ? "Saving…" : "Save profile"}
+          </span>
+          <span className="btn-boxy-split-arrow" aria-hidden>
+            →
+          </span>
         </button>
       </form>
     </main>

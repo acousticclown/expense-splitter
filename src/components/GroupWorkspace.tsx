@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+} from "react";
 import {
   addMember,
   computeBalances,
@@ -22,7 +28,12 @@ import type {
 } from "@/lib/types";
 import { BottomNav, type TabId } from "@/components/ui/BottomNav";
 import { Sheet } from "@/components/ui/Sheet";
+import { Loader } from "@/components/ui/Loader";
+import { EmptyStage } from "@/components/ui/EmptyStage";
 import { ExpenseForm } from "@/components/ExpenseForm";
+import { GroupHeader } from "@/components/GroupHeader";
+import { takeStubOpen, type StubOpenPayload } from "@/lib/stubTheme";
+import { formatStubDates } from "@/lib/stubKind";
 
 export function GroupWorkspace({ slug }: { slug: string }) {
   const [group, setGroup] = useState<Group | null>(null);
@@ -31,13 +42,22 @@ export function GroupWorkspace({ slug }: { slug: string }) {
   const [settlements, setSettlements] = useState<Settlement[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<TabId>("balances");
+  const [tab, setTab] = useState<TabId>("settle");
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState<ExpenseWithShares | null>(null);
-  const [copied, setCopied] = useState(false);
   const [newPerson, setNewPerson] = useState("");
   const [busy, setBusy] = useState(false);
   const [authed, setAuthed] = useState<boolean | null>(null);
+  const [arrive, setArrive] = useState<StubOpenPayload | null>(null);
+
+  useEffect(() => {
+    const payload = takeStubOpen();
+    if (payload && payload.slug === slug) {
+      setArrive(payload);
+      const t = window.setTimeout(() => setArrive(null), 1400);
+      return () => window.clearTimeout(t);
+    }
+  }, [slug]);
 
   const reload = useCallback(async () => {
     const data = await getGroupBySlug(slug);
@@ -80,7 +100,7 @@ export function GroupWorkspace({ slug }: { slug: string }) {
       await saveExpense(draft, expenseId);
       setSheetOpen(false);
       setEditing(null);
-      setTab("spends");
+      setTab("ledger");
       await reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save expense");
@@ -146,19 +166,29 @@ export function GroupWorkspace({ slug }: { slug: string }) {
   if (authed === false) {
     return (
       <main className="shell space-y-4 py-16">
-        <p className="text-ink-soft">Sign in to open this group.</p>
-        <Link href={`/login?next=/g/${slug}`} className="btn btn-primary inline-flex">
-          Sign in
+        <EmptyStage
+          title="Stub locked"
+          body="Sign in with your Mini Apps account to open this group."
+          action={
+        <Link href={`/login?next=/g/${slug}`} className="block no-underline">
+          <span className="btn-boxy-split pointer-events-none">
+            <span className="btn-boxy-split-label">Sign in</span>
+            <span className="btn-boxy-split-arrow" aria-hidden>
+              →
+            </span>
+          </span>
         </Link>
+          }
+        />
       </main>
     );
   }
 
   if (loading || authed === null) {
     return (
-      <p className="shell py-16 text-ink-soft" aria-busy>
-        Loading group…
-      </p>
+      <main className="shell flex min-h-[40vh] items-center justify-center py-16">
+        <Loader />
+      </main>
     );
   }
 
@@ -167,7 +197,7 @@ export function GroupWorkspace({ slug }: { slug: string }) {
       <main className="shell space-y-4 py-16">
         <p className="text-[var(--bad)]">{error || "Not found"}</p>
         <Link href="/" className="btn btn-ghost inline-flex">
-          ← Groups
+          ← Stubs
         </Link>
       </main>
     );
@@ -177,39 +207,22 @@ export function GroupWorkspace({ slug }: { slug: string }) {
 
   return (
     <>
-      <main className="shell page-pad anim-rise space-y-5 pt-5 sm:space-y-7 sm:pt-10">
-        <header className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <Link
-              href="/"
-              className="mb-2 inline-flex items-center gap-1 text-sm font-700 text-ink-soft hover:text-ink"
-            >
-              ← Groups
-            </Link>
-            <p className="text-[0.7rem] font-800 uppercase tracking-[0.14em] text-ink-soft">
-              Expense Splitter
-            </p>
-            <h1 className="font-display mt-1 truncate text-3xl font-800 tracking-tight text-ink sm:text-5xl">
-              {group.name}
-            </h1>
-            <p className="mt-1 text-xs font-650 text-ink-soft">{currency}</p>
-          </div>
-          <button
-            type="button"
-            className="btn btn-ghost text-sm"
-            onClick={async () => {
-              try {
-                await navigator.clipboard?.writeText(window.location.href);
-                setCopied(true);
-                window.setTimeout(() => setCopied(false), 1600);
-              } catch {
-                /* ignore */
-              }
-            }}
-          >
-            {copied ? "Copied" : "Copy link"}
-          </button>
-        </header>
+      <main
+        className={`shell page-pad space-y-5 pt-5 sm:space-y-7 sm:pt-10 ${
+          arrive ? `stub-arrive theme-${arrive.theme}` : "anim-rise"
+        }`}
+        style={
+          arrive
+            ? ({ viewTransitionName: "stub-cover" } as CSSProperties)
+            : undefined
+        }
+      >
+        <GroupHeader
+          name={group.name}
+          currency={currency}
+          stubKind={group.stub_kind || "group"}
+          dateLabel={formatStubDates(group)}
+        />
 
         {error && (
           <p className="rounded-2xl bg-red-50 px-3 py-2 text-sm font-semibold text-[var(--bad)]">
@@ -220,9 +233,9 @@ export function GroupWorkspace({ slug }: { slug: string }) {
         <div className="hidden gap-2 md:flex" role="tablist" aria-label="Group sections">
           {(
             [
-              ["balances", "Balances"],
-              ["spends", "Spends"],
-              ["people", "People"],
+              ["settle", "Settle"],
+              ["ledger", "Ledger"],
+              ["crew", "Crew"],
             ] as const
           ).map(([id, label]) => (
             <button
@@ -236,157 +249,229 @@ export function GroupWorkspace({ slug }: { slug: string }) {
               {label}
             </button>
           ))}
-          <button
-            type="button"
-            className="btn btn-primary ml-auto"
-            onClick={() => {
-              setEditing(null);
-              setSheetOpen(true);
-            }}
-          >
-            Add expense
-          </button>
+          {tab === "ledger" && (
+            <button
+              type="button"
+              className="btn-boxy-split ml-auto max-w-[14rem]"
+              onClick={() => {
+                setEditing(null);
+                setSheetOpen(true);
+              }}
+            >
+              <span className="btn-boxy-split-label">Add spend</span>
+              <span className="btn-boxy-split-arrow" aria-hidden>
+                →
+              </span>
+            </button>
+          )}
         </div>
 
-        {tab === "balances" && (
-          <section aria-label="Balances" className="space-y-5">
-            <div>
-              <h2 className="font-display text-2xl font-700 tracking-tight">
-                Who owes whom
-              </h2>
-              <p className="mt-1 text-sm text-ink-soft">Clear the slate.</p>
-            </div>
+        {tab === "settle" && (
+          <section aria-label="Settle" className="space-y-5">
             {!members.length ? (
-              <p className="text-sm text-ink-soft">Add people to see balances.</p>
+              <EmptyStage title="No crew yet" body="Add people on Crew." />
             ) : (
-              <ul className="space-y-3">
-                {balances.map((b) => (
-                  <li
-                    key={b.memberId}
-                    className="flex items-center justify-between gap-3 border-b border-[var(--line)] pb-3"
+              <>
+                <div className="settle-hero">
+                  <p className="settle-hero-label">Open balance</p>
+                  <p className="settle-hero-value">
+                    {formatMoney(
+                      transfers.reduce((sum, t) => sum + t.amountCents, 0),
+                      currency,
+                    )}
+                  </p>
+                </div>
+
+                <div className="balance-board">
+                  <div className="balance-head" aria-hidden>
+                    <span>Name</span>
+                    <span>Balance</span>
+                  </div>
+                  <ul className="balance-list">
+                    {balances.map((b) => (
+                      <li key={b.memberId} className="balance-row">
+                        <span className="font-800">{b.name}</span>
+                        <span
+                          className={
+                            b.netCents > 1
+                              ? "balance-amt is-credit"
+                              : b.netCents < -1
+                                ? "balance-amt is-debt"
+                                : "balance-amt is-zero"
+                          }
+                        >
+                          {b.netCents > 1
+                            ? `+${formatMoney(b.netCents, currency)}`
+                            : b.netCents < -1
+                              ? `−${formatMoney(-b.netCents, currency)}`
+                              : "—"}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="transfer-block">
+                  <p className="label">Transfers</p>
+                  {!transfers.length ? (
+                    <p className="transfer-empty">All square.</p>
+                  ) : (
+                    <ul className="transfer-list">
+                      {transfers.map((t) => (
+                        <li
+                          key={`${t.fromId}-${t.toId}-${t.amountCents}`}
+                          className="transfer-row"
+                        >
+                          <div className="min-w-0">
+                            <p className="transfer-route">
+                              <span className="font-800">{t.fromName}</span>
+                              <span className="transfer-arrow" aria-hidden>
+                                →
+                              </span>
+                              <span className="font-800">{t.toName}</span>
+                            </p>
+                            <p className="transfer-amt">
+                              {formatMoney(t.amountCents, currency)}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            className="btn btn-ink px-3 py-2 text-xs"
+                            disabled={busy}
+                            onClick={() => onSettle(t)}
+                          >
+                            Mark paid
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </>
+            )}
+          </section>
+        )}
+
+        {tab === "ledger" && (
+          <section aria-label="Ledger" className="space-y-4">
+            <div className="flex items-end justify-between gap-3">
+              <h2 className="font-display text-2xl font-800 tracking-tight">Ledger</h2>
+              <button
+                type="button"
+                className="btn btn-ghost hidden text-sm md:inline-flex"
+                onClick={() => {
+                  setEditing(null);
+                  setSheetOpen(true);
+                }}
+              >
+                Add spend
+              </button>
+            </div>
+            {!expenses.length ? (
+              <EmptyStage
+                title="No entries"
+                action={
+                  <button
+                    type="button"
+                    className="btn-boxy-split"
+                    onClick={() => {
+                      setEditing(null);
+                      setSheetOpen(true);
+                    }}
                   >
-                    <span className="font-700">{b.name}</span>
+                    <span className="btn-boxy-split-label">Add spend</span>
+                    <span className="btn-boxy-split-arrow" aria-hidden>
+                      →
+                    </span>
+                  </button>
+                }
+              />
+            ) : (
+              <div className="ledger-book">
+                <div className="ledger-rule-head" aria-hidden>
+                  <span>Date</span>
+                  <span>Entry</span>
+                  <span className="text-right">Amount</span>
+                </div>
+                <ul className="ledger-rows">
+                  {expenses.map((e) => (
+                    <li key={e.id}>
+                      <button
+                        type="button"
+                        className="ledger-row"
+                        onClick={() => {
+                          setEditing(e);
+                          setSheetOpen(true);
+                        }}
+                      >
+                        <span className="ledger-date">
+                          {new Date(e.created_at).toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                        <span className="ledger-entry min-w-0">
+                          <span className="ledger-desc">{e.description}</span>
+                          <span className="ledger-meta">{describePayers(e)}</span>
+                        </span>
+                        <span className="ledger-amount">
+                          {formatMoney(e.amount_cents, currency)}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </section>
+        )}
+
+        {tab === "crew" && (
+          <section aria-label="Crew" className="space-y-4">
+            <h2 className="font-display text-2xl font-800 tracking-tight">Crew</h2>
+            {!members.length ? (
+              <EmptyStage title="Empty roster" />
+            ) : (
+              <ul className="crew-roster">
+                {members.map((m) => (
+                  <li key={m.id} className="crew-roster-row">
+                    <span className="crew-roster-avatar" aria-hidden>
+                      {(m.name[0] || "?").toUpperCase()}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-800">{m.name}</span>
+                      {m.email ? (
+                        <span className="block truncate text-xs text-ink-soft">
+                          {m.email}
+                        </span>
+                      ) : null}
+                    </span>
                     <span
-                      className={
-                        b.netCents > 1
-                          ? "font-800 text-[var(--good)]"
-                          : b.netCents < -1
-                            ? "font-800 text-[var(--bad)]"
-                            : "font-650 text-ink-soft"
-                      }
+                      className={`crew-status ${
+                        m.status === "pending"
+                          ? "is-pending"
+                          : m.status === "claimed"
+                            ? "is-claimed"
+                            : "is-named"
+                      }`}
                     >
-                      {b.netCents > 1
-                        ? `gets ${formatMoney(b.netCents, currency)}`
-                        : b.netCents < -1
-                          ? `owes ${formatMoney(-b.netCents, currency)}`
-                          : "settled"}
+                      {m.status === "pending"
+                        ? "Pending"
+                        : m.status === "claimed"
+                          ? "Joined"
+                          : "Guest"}
                     </span>
                   </li>
                 ))}
               </ul>
             )}
-
-            <div className="pt-2">
-              <h3 className="font-display text-xl font-700">Settle up</h3>
-              {!transfers.length ? (
-                <p className="mt-3 text-sm text-ink-soft">All square — nice.</p>
-              ) : (
-                <ul className="mt-3 space-y-3">
-                  {transfers.map((t) => (
-                    <li
-                      key={`${t.fromId}-${t.toId}-${t.amountCents}`}
-                      className="flex flex-wrap items-center justify-between gap-2"
-                    >
-                      <p className="text-sm">
-                        <strong>{t.fromName}</strong> pays{" "}
-                        <strong>{t.toName}</strong>{" "}
-                        {formatMoney(t.amountCents, currency)}
-                      </p>
-                      <button
-                        type="button"
-                        className="btn btn-ink px-3 py-2 text-xs"
-                        disabled={busy}
-                        onClick={() => onSettle(t)}
-                      >
-                        Mark paid
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </section>
-        )}
-
-        {tab === "spends" && (
-          <section aria-label="Spends" className="space-y-4">
-            <div className="flex items-end justify-between gap-3">
-              <div>
-                <h2 className="font-display text-2xl font-700 tracking-tight">
-                  Spends
-                </h2>
-                <p className="mt-1 text-sm text-ink-soft">Tap a spend to edit.</p>
-              </div>
-            </div>
-            <ul>
-              {expenses.map((e) => (
-                <li key={e.id}>
-                  <button
-                    type="button"
-                    className="flex w-full items-start justify-between gap-3 border-b border-[var(--line)] py-3.5 text-left"
-                    onClick={() => {
-                      setEditing(e);
-                      setSheetOpen(true);
-                    }}
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate font-700">{e.description}</p>
-                      <p className="text-sm text-ink-soft">
-                        {describePayers(e)} ·{" "}
-                        {new Date(e.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <p className="shrink-0 font-800">
-                      {formatMoney(e.amount_cents, currency)}
-                    </p>
-                  </button>
-                </li>
-              ))}
-              {!expenses.length && (
-                <li className="py-10 text-sm text-ink-soft">
-                  No spends yet. Tap + to add one.
-                </li>
-              )}
-            </ul>
-          </section>
-        )}
-
-        {tab === "people" && (
-          <section aria-label="People" className="space-y-4">
-            <div>
-              <h2 className="font-display text-2xl font-700 tracking-tight">
-                People
-              </h2>
-              <p className="mt-1 text-sm text-ink-soft">
-                Names used for splitting (not the same as app login).
-              </p>
-            </div>
-            <ul className="space-y-2">
-              {members.map((m) => (
-                <li key={m.id} className="border-b border-[var(--line)] py-3 font-700">
-                  {m.name}
-                </li>
-              ))}
-              {!members.length && (
-                <li className="py-6 text-sm text-ink-soft">No people yet.</li>
-              )}
-            </ul>
-            <form onSubmit={onAddPerson} className="flex gap-2 pt-2">
+            <form onSubmit={onAddPerson} className="crew-add-bar">
               <input
                 className="input"
-                placeholder="Add person"
+                placeholder="Name or email"
                 value={newPerson}
                 onChange={(e) => setNewPerson(e.target.value)}
+                aria-label="Add person by name or email"
               />
               <button type="submit" className="btn btn-ink shrink-0" disabled={busy}>
                 Add
@@ -396,23 +481,25 @@ export function GroupWorkspace({ slug }: { slug: string }) {
         )}
       </main>
 
-      <button
-        type="button"
-        className="fixed bottom-[calc(var(--nav-h)+var(--safe-b)+0.85rem)] right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--accent)] text-2xl font-800 text-[var(--accent-ink)] shadow-[0_12px_28px_rgba(155,196,31,0.4)] md:hidden"
-        aria-label="Add expense"
-        onClick={() => {
-          setEditing(null);
-          setSheetOpen(true);
-        }}
-      >
-        +
-      </button>
+      {tab === "ledger" && (
+        <button
+          type="button"
+          className="stamp-fab"
+          aria-label="Stamp expense"
+          onClick={() => {
+            setEditing(null);
+            setSheetOpen(true);
+          }}
+        >
+          +
+        </button>
+      )}
 
       <BottomNav tab={tab} onChange={setTab} />
 
       <Sheet
         open={sheetOpen}
-        title={editing ? "Edit expense" : "Add expense"}
+        title={editing ? "Edit spend" : "Add spend"}
         onClose={() => {
           setSheetOpen(false);
           setEditing(null);

@@ -1,3 +1,6 @@
+export type StubKind = "event" | "group";
+export type EventDateMode = "single" | "range";
+
 export type Group = {
   id: string;
   name: string;
@@ -5,12 +8,26 @@ export type Group = {
   currency: string;
   created_at: string;
   owner_id?: string | null;
+  /** event = time-bound; group = open-ended. Existing stubs default to group. */
+  stub_kind?: StubKind;
+  event_date_mode?: EventDateMode | null;
+  starts_on?: string | null;
+  ends_on?: string | null;
+  /** Reserved — archive UI later */
+  archived_at?: string | null;
+  /** Reserved — recurrence UI later */
+  recurrence?: string | null;
 };
+
+export type MemberStatus = "named" | "pending" | "claimed";
 
 export type Member = {
   id: string;
   group_id: string;
   name: string;
+  email?: string | null;
+  status?: MemberStatus;
+  profile_id?: string | null;
   created_at: string;
 };
 
