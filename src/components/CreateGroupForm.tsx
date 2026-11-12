@@ -17,7 +17,7 @@ const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED"].map((c) => ({
 
 type Step = "kind" | "details";
 
-export function CreateGroupForm({ onCancel }: { onCancel?: () => void }) {
+export function CreateGroupForm() {
   const router = useRouter();
   const [step, setStep] = useState<Step>("kind");
   const [stubKind, setStubKind] = useState<StubKind | null>(null);
@@ -106,11 +106,6 @@ export function CreateGroupForm({ onCancel }: { onCancel?: () => void }) {
             <span className="stub-kind-copy">Flatmates, ongoing crew — no end date</span>
           </button>
         </div>
-        {onCancel && (
-          <button type="button" className="text-link" onClick={onCancel}>
-            Cancel
-          </button>
-        )}
       </div>
     );
   }

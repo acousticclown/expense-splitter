@@ -568,7 +568,9 @@ body.group-header-overlay-open .stamp-fab {
 
 .stub-kind-grid {
   display: grid;
-  gap: 0.85rem;
+  gap: 1.15rem;
+  padding: 0.35rem 0.15rem 0.55rem;
+  perspective: 1200px;
 }
 
 .stub-kind-card {
@@ -577,29 +579,44 @@ body.group-header-overlay-open .stamp-fab {
   align-items: flex-start;
   gap: 0.35rem;
   width: 100%;
-  padding: 1.15rem 1.2rem;
-  border: 1px solid rgba(17, 17, 17, 0.06);
+  padding: 1.25rem 1.25rem;
+  border: 1px solid rgba(17, 17, 17, 0.05);
   border-radius: var(--radius-card);
   text-align: left;
   cursor: pointer;
   font: inherit;
   color: var(--ink);
-  box-shadow: var(--shadow-lift);
+  /* Soft Hub Card3D depth — layered inset + soft + hard lift (not a mushy puddle) */
+  box-shadow: var(--shadow-soft);
+  transform: perspective(1200px) rotateX(2.5deg) rotateY(-2deg);
+  transform-style: preserve-3d;
   transition:
     transform var(--motion-stamp),
     box-shadow var(--motion-stamp);
 }
 
 .stub-kind-card.theme-event {
-  background: linear-gradient(155deg, #ffffff 35%, var(--pastel-lilac));
+  background: linear-gradient(155deg, #ffffff 38%, var(--pastel-lilac));
 }
 
 .stub-kind-card.theme-group {
-  background: linear-gradient(155deg, #ffffff 35%, var(--pastel-mint));
+  background: linear-gradient(155deg, #ffffff 38%, var(--pastel-mint));
+  transform: perspective(1200px) rotateX(2.5deg) rotateY(2deg);
+}
+
+.stub-kind-card:hover,
+.stub-kind-card:focus-visible {
+  outline: none;
+  transform: perspective(1200px) rotateX(0.5deg) rotateY(0deg) translateY(-2px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.85) inset,
+    0 2px 0 rgba(17, 17, 17, 0.04),
+    0 22px 40px rgba(17, 17, 17, 0.14),
+    0 48px 72px rgba(17, 17, 17, 0.1);
 }
 
 .stub-kind-card:active {
-  transform: translateY(1px);
+  transform: perspective(1200px) rotateX(1deg) rotateY(0deg) translateY(1px);
   box-shadow: var(--shadow-press);
 }
 
